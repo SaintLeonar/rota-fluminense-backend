@@ -1,36 +1,30 @@
-from flask_openapi3 import APIBlueprint
-from flask_openapi3 import Tag
+from flask_openapi3 import APIBlueprint, Tag
 
-from schemas.avaliacao_schema import (
-    AvaliacaoSchema,
-    AvaliacaoInputSchema,
-    AvaliacaoPathSchema,
-    AvaliacaoLocalPathSchema,
-    AvaliacaoListSchema,
-    apresenta_avaliacoes,
-)
+from schemas.avaliacao_schema import (AvaliacaoInputSchema,
+                                      AvaliacaoListSchema,
+                                      AvaliacaoLocalPathSchema,
+                                      AvaliacaoPathSchema, AvaliacaoSchema,
+                                      apresenta_avaliacoes)
 from schemas.error import ErrorSchema
-
-from services.avaliacao_service import (
-    criar_avaliacao,
-    deletar_avaliacao,
-    listar_avaliacoes,
-)
-from utils.serializers import serializar_avaliacao
+from services.avaliacao_service import (criar_avaliacao, deletar_avaliacao,
+                                        listar_avaliacoes)
 from utils.exceptions import AppError
-
+from utils.serializers import serializar_avaliacao
 
 avaliacao_bp = APIBlueprint("avaliacoes", __name__)
 
 
 avaliacao_tag = Tag(
     name="Avaliações",
-    description="Operações relacionadas às avaliações de locais"
+    description="Operações relacionadas às avaliações de locais",
 )
 
 
-@avaliacao_bp.get("/locais/<int:local_id>/avaliacoes", tags=[avaliacao_tag],
-                  responses={200: AvaliacaoListSchema, 404: ErrorSchema, 500: ErrorSchema})
+@avaliacao_bp.get(
+    "/locais/<int:local_id>/avaliacoes",
+    tags=[avaliacao_tag],
+    responses={200: AvaliacaoListSchema, 404: ErrorSchema, 500: ErrorSchema},
+)
 def get_avaliacoes(path: AvaliacaoLocalPathSchema):
     """Endpoint para listar as avaliações de um local."""
     try:
@@ -42,8 +36,11 @@ def get_avaliacoes(path: AvaliacaoLocalPathSchema):
         return {"message": "Erro interno"}, 500
 
 
-@avaliacao_bp.post("/locais/<int:local_id>/avaliacoes", tags=[avaliacao_tag],
-                   responses={201: AvaliacaoSchema, 400: ErrorSchema, 500: ErrorSchema} )
+@avaliacao_bp.post(
+    "/locais/<int:local_id>/avaliacoes",
+    tags=[avaliacao_tag],
+    responses={201: AvaliacaoSchema, 400: ErrorSchema, 500: ErrorSchema},
+)
 def post_avaliacao(path: AvaliacaoLocalPathSchema, body: AvaliacaoInputSchema):
     """Endpoint para criar uma avaliação de um local."""
     try:
@@ -55,8 +52,11 @@ def post_avaliacao(path: AvaliacaoLocalPathSchema, body: AvaliacaoInputSchema):
         return {"message": "Erro interno"}, 500
 
 
-@avaliacao_bp.delete("/avaliacoes/<int:avaliacao_id>", tags=[avaliacao_tag],
-                     responses={204: None, 404: ErrorSchema, 500: ErrorSchema})
+@avaliacao_bp.delete(
+    "/avaliacoes/<int:avaliacao_id>",
+    tags=[avaliacao_tag],
+    responses={204: None, 404: ErrorSchema, 500: ErrorSchema},
+)
 def delete_avaliacao(path: AvaliacaoPathSchema):
     """Endpoint para deletar uma avaliação."""
     try:

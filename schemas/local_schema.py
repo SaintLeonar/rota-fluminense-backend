@@ -1,10 +1,9 @@
+from typing import List, Optional
+
 from pydantic import BaseModel
-from typing import Optional, List
 
 from schemas.avaliacao_schema import AvaliacaoSchema
 
-
-from models import local_turistico
 
 class LocalSchema(BaseModel):
     id: int
@@ -15,48 +14,64 @@ class LocalSchema(BaseModel):
     media_avaliacoes: Optional[float]
     total_avaliacoes: int
 
+
 class LocalDetalhadoSchema(LocalSchema):
     avaliacoes: List[AvaliacaoSchema]
+
 
 class LocalInputSchema(BaseModel):
     nome: str
     cidade: str
     categoria: str
     descricao: str
-    
-    
+
+
 class LocalSchema(LocalInputSchema):
     id: int
-    
-    
+
+
 class LocalListSchema(LocalSchema):
     locais: list[LocalSchema]
-    
+
 
 class LocalQuerySchema(BaseModel):
     cidade: Optional[str] = None
     categoria: Optional[str] = None
-    
-    
+
+
 class LocalPathSchema(BaseModel):
     local_id: int
-    
+
+
 def apresenta_locais(locais):
+    """Apresenta a lista de locais.
+    
+    :param locais: Lista de locais.
+    :return: Dicionário com a lista de locais.
+    """
     resultado = []
     for local in locais:
-        resultado.append({
-            "id": local["id"],
-            "nome": local["nome"],
-            "cidade": local["cidade"],
-            "categoria": local.get("categoria"),
-            "descricao": local["descricao"],
-            "media_avaliacoes": local.get("media_avaliacoes"),
-            "total_avaliacoes": local.get("total_avaliacoes", 0)
-        })
-    
+        resultado.append(
+            {
+                "id": local["id"],
+                "nome": local["nome"],
+                "cidade": local["cidade"],
+                "categoria": local.get("categoria"),
+                "descricao": local["descricao"],
+                "media_avaliacoes": local.get("media_avaliacoes"),
+                "total_avaliacoes": local.get("total_avaliacoes", 0),
+            }
+        )
+
     return {"locais": resultado}
 
+
 def apresenta_local(local):
+    """Apresenta um local.
+    
+    :param local: Local a ser apresentado.
+    :return: Dicionário com o local.
+    """
     return {
         "id": local["id"],
         "nome": local["nome"],
@@ -74,5 +89,3 @@ def apresenta_local(local):
             for avaliacao in local["avaliacoes"]
         ],
     }
-
-    

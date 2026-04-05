@@ -27,7 +27,7 @@ def listar_locais(cidade=None, categoria=None):
         query = query.filter(LocalTuristico.categoria.ilike(f"%{categoria}%"))
 
     locais = query.all()
-    
+
     if not locais:
         raise AppError("Nenhum local encontrado", 404)
 
