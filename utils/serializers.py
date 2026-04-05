@@ -1,5 +1,5 @@
-from rota_fluminense_backend.models.avaliacao import Avaliacao
-from rota_fluminense_backend.models.local_turistico import LocalTuristico
+from models.avaliacao import Avaliacao
+from models.local_turistico import LocalTuristico
 
 
 def serializar_local(local: LocalTuristico):

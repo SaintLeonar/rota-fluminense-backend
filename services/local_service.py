@@ -27,6 +27,9 @@ def listar_locais(cidade=None, categoria=None):
         query = query.filter(LocalTuristico.categoria.ilike(f"%{categoria}%"))
 
     locais = query.all()
+    
+    if not locais:
+        raise AppError("Nenhum local encontrado", 404)
 
     resultado = []
 
@@ -70,7 +73,7 @@ def buscar_local(id: int):
         raise AppError("Local não encontrado", 404)
 
     notas = [avaliacao.nota for avaliacao in local.avaliacoes]
-    media = round(sum(notas) / len(notas), 2) if notas else None
+    media = round(sum(notas) / len(notas), 1) if notas else None
 
     resultado = {
         "id": local.id,

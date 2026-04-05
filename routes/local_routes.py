@@ -1,4 +1,16 @@
-from flask import Blueprint, request
+from flask_openapi3 import APIBlueprint, Tag
+
+from schemas.local_schema import (
+    LocalSchema,
+    LocalDetalhadoSchema,
+    LocalInputSchema,
+    LocalListSchema,
+    LocalQuerySchema,
+    LocalPathSchema,
+    apresenta_locais,
+    apresenta_local
+)
+from schemas.error import ErrorSchema
 
 from services.local_service import (
     atualizar_local,
@@ -8,69 +20,80 @@ from services.local_service import (
     listar_locais,
 )
 from utils.serializers import serializar_local
+from utils.exceptions import AppError
 
-local_bp = Blueprint("locais", __name__)
+
+local_bp = APIBlueprint("locais", __name__)
 
 
-@local_bp.route("/locais", methods=["GET"])
-def get_locais():
+local_tag = Tag(
+    name="Locais",
+    description="Operações relacionadas a locais turísticos"
+)
+
+
+@local_bp.get("/locais", tags=[local_tag], 
+              responses={200: LocalListSchema, 404: ErrorSchema, 500: ErrorSchema})
+def get_locais(query: LocalQuerySchema):
     """Endpoint para listar os locais."""
-    cidade = request.args.get("cidade")
-    categoria = request.args.get("categoria")
-
     try:
-        return listar_locais(cidade, categoria), 200
-    except Exception as e:
-        return {"erro": str(e)}, e.status_code
+        resultado = listar_locais(query.cidade, query.categoria)
+        return apresenta_locais(resultado)
+    except AppError as e:
+        return {"message": e.message}, e.status_code
+    except Exception:
+        return {"message": "Erro interno"}, 500
 
 
-@local_bp.route("/locais/<int:local_id>", methods=["GET"])
-def get_local(local_id: int):
-    """Endpoint para buscar um local por ID.
-
-    Args:
-        local_id (int): ID do local.
-    """
+@local_bp.get("/locais/<int:local_id>", tags=[local_tag],
+              responses={200: LocalDetalhadoSchema, 404: ErrorSchema, 500: ErrorSchema})
+def get_local(path: LocalPathSchema):
+    """Endpoint para buscar um local por ID."""
     try:
-        return buscar_local(local_id), 200
-    except Exception as e:
-        return {"erro": str(e)}, e.status_code
+        local = buscar_local(path.local_id)
+        return apresenta_local(local)
+    except AppError as e:
+        return {"message": e.message}, e.status_code
+    except Exception:
+        return {"message": "Erro interno"}, 500
 
 
-@local_bp.route("/locais", methods=["POST"])
-def post_local():
+@local_bp.post("/locais", tags=[local_tag],
+              responses={201: LocalSchema, 400: ErrorSchema, 500: ErrorSchema})
+def post_local(body: LocalInputSchema):
     """Endpoint para criar um novo local."""
     try:
-        local = criar_local(request.get_json())
+        local = criar_local(body.dict())
 
         return serializar_local(local), 201
-    except Exception as e:
-        return {"erro": str(e)}, e.status_code
+    except AppError as e:
+        return {"message": e.message}, e.status_code
+    except Exception:
+        return {"message": "Erro interno"}, 500
 
 
-@local_bp.route("/locais/<int:local_id>", methods=["PUT"])
-def put_local(local_id: int):
-    """Endpoint para atualizar um local.
-
-    Args:
-        local_id (int): ID do local.
-    """
+@local_bp.put("/locais/<int:local_id>", tags=[local_tag],
+              responses={200: LocalSchema, 400: ErrorSchema, 404: ErrorSchema, 500: ErrorSchema})
+def put_local(path: LocalPathSchema, body: LocalInputSchema):
+    """Endpoint para atualizar um local."""
     try:
-        local = atualizar_local(local_id, request.get_json())
+        local = atualizar_local(path.local_id, body.dict())
 
-        return serializar_local(local), 201
-    except Exception as e:
-        return {"erro": str(e)}, e.status_code
+        return serializar_local(local)
+    except AppError as e:
+        return {"message": e.message}, e.status_code
+    except Exception:
+        return {"message": "Erro interno"}, 500
 
 
-@local_bp.route("/locais/<int:local_id>", methods=["DELETE"])
-def delete_local(local_id: int):
-    """Endpoint para deletar um local.
-
-    Args:
-        local_id (int): ID do local.
-    """
+@local_bp.delete("/locais/<int:local_id>", tags=[local_tag],
+                 responses={204: None, 404: ErrorSchema, 500: ErrorSchema})
+def delete_local(path: LocalPathSchema):
+    """Endpoint para deletar um local."""
     try:
-        return deletar_local(local_id), 204
-    except Exception as e:
-        return {"erro": str(e)}, e.status_code
+        deletar_local(path.local_id)
+        return "", 204
+    except AppError as e:
+        return {"message": e.message}, e.status_code
+    except Exception:
+        return {"message": "Erro interno"}, 500

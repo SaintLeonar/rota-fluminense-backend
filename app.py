@@ -1,23 +1,28 @@
-from flask import Flask
+from flask_openapi3 import OpenAPI, Info
+from flask_cors import CORS
 
 from models import init_db
 from routes.avaliacao_routes import avaliacao_bp
 from routes.local_routes import local_bp
 
-app = Flask(__name__)
-
-app.register_blueprint(local_bp)
-app.register_blueprint(avaliacao_bp)
+from flask import redirect
+from flask_openapi3 import Tag
 
 
-@app.route("/")
+info = Info(title="Rota Fluminense API", version="1.0.0")
+app = OpenAPI(__name__, info=info)
+
+app.register_api(local_bp)
+app.register_api(avaliacao_bp)
+CORS(app)
+
+home_tag = Tag(name="Documentação", description="Seleção de documentação: Swagger, Redoc ou RapiDoc")
+
+@app.get('/', tags=[home_tag])
 def home():
-    """Endpoint raiz da API.
-    
-    Returns:
-        dict: Mensagem de boas-vindas.
+    """Redireciona para /openapi, tela que permite a escolha do estilo de documentação.
     """
-    return {"message": "API Rota Fluminense no ar!"}
+    return redirect('/openapi')
 
 
 if __name__ == "__main__":
