@@ -1,6 +1,7 @@
 from models.base import SessionLocal
 from models.local_turistico import LocalTuristico
 from utils.calculos import calcular_media
+from utils.constants import CIDADES_RJ
 from utils.exceptions import AppError
 
 
@@ -107,10 +108,18 @@ def criar_local(dados: dict):
         LocalTuristico: Objeto criado.
     """
     session = SessionLocal()
+    
+    # Normaliza a cidade (remove espaços e coloca em title case)
+    # Ainda possui um problema nos casos de preposições (de, do, da, etc.)
+    cidade = dados["cidade"].strip().title()
+    
+    if cidade not in CIDADES_RJ:
+        session.close()
+        raise AppError("Cidade inválida", 400)
 
     local = LocalTuristico(
         nome=dados["nome"],
-        cidade=dados["cidade"],
+        cidade=cidade,
         categoria=dados["categoria"],
         descricao=dados["descricao"],
     )
