@@ -119,7 +119,7 @@ def criar_local(dados: dict):
 
     local = LocalTuristico(
         nome=dados["nome"],
-        cidade=cidade,
+        cidade=dados["cidade"],
         categoria=dados["categoria"],
         descricao=dados["descricao"],
     )
