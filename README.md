@@ -13,9 +13,19 @@ cd rota_fluminense_backend
 ```
 
 ### 2. Criar e ativar ambiente virtual
+
+Sistemas Linux/macOS:
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+```
+
+Sistemas Windows (powershell):
+
+```bash
+python3 -m venv .venv
+.venv\Scripts\Activate  
 ```
 
 ### 3. Instalar dependências
