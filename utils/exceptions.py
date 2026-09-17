@@ -1,14 +1,19 @@
+from typing import Any, Optional
+
+
 class AppError(Exception):
-    def __init__(self, message, status_code=500):
-        """Define uma Exceção Personalizada.
+    """Representa um erro esperado com contrato público explícito."""
 
-        Args:
-            message (str): Mensagem de erro.
-            status_code (int): Código de status HTTP.
-
-        Returns:
-            None
-        """
-        self.message = message
+    def __init__(
+        self,
+        codigo: str,
+        mensagem: str,
+        status_code: int,
+        detalhes: Optional[list[dict[str, Any]]] = None,
+    ) -> None:
+        """Inicializa um erro esperado com sua representação pública."""
+        self.codigo = codigo
+        self.mensagem = mensagem
         self.status_code = status_code
-        super().__init__(self.message)
+        self.detalhes = detalhes or []
+        super().__init__(mensagem)

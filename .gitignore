@@ -2,4 +2,9 @@
 __pycache__/
 *.pyc
 .env
+.env.*
+!.env.example
 database.db
+
+# Override local para acesso temporário do host ao MySQL
+compose.mysql-host-access.yml

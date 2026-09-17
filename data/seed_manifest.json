@@ -1,0 +1,450 @@
+{
+  "schema_version": 1,
+  "manifesto": {
+    "nome": "Seed inicial de locais turísticos e avaliações",
+    "gerado_em": "2026-09-10",
+    "projeto_destino": "rota-fluminense-backend",
+    "finalidade": "Fornecer a entrada declarativa, rastreável e idempotente para a futura carga MySQL dos seis locais aprovados e de suas avaliações elegíveis.",
+    "timezone_referencia": "America/Sao_Paulo",
+    "politica_instante_avaliacoes": "Como os mocks informam somente a data civil, cada avaliação aprovada recebe 12:00:00Z. Esse horário determinístico mantém o mesmo dia em UTC e em America/Sao_Paulo e não representa o horário real da avaliação."
+  },
+  "fontes": {
+    "mock_locais": {
+      "projeto": "rota-fluminense-front-end-avancado",
+      "caminho": "src/data/locais.json",
+      "sha256": "0865944844E020ACAE49DA469D61F16BA22727395D681E5FC80A33D9551BBA84"
+    },
+    "mock_avaliacoes": {
+      "projeto": "rota-fluminense-front-end-avancado",
+      "caminho": "src/data/avaliacoes.json",
+      "sha256": "BCA953992093DB0E5D6131DD29A3CA81E9DEE5AC17A6F158F3BB7ABF11AF7A01"
+    },
+    "sqlite_legado": {
+      "projeto": "rota-fluminense-backend",
+      "caminho": "backups/sqlite-legado/database.db",
+      "sha256": "AD16254D5E41CFEB004D418A16C714D6C30C3CD465CBF23C5978127F1835E9FC"
+    },
+    "coordenadas": [
+      {
+        "id": "ufrj_praia_arpoador",
+        "url": "https://pantheon.ufrj.br/bitstream/11422/28086/1/962247.pdf",
+        "consultado_em": "2026-09-10",
+        "observacao": "Ponto de amostragem da Praia do Arpoador registrado em 14/07/2022."
+      },
+      {
+        "id": "wikidata_parque_lage",
+        "url": "https://www.wikidata.org/wiki/Q7139641",
+        "consultado_em": "2026-09-10",
+        "observacao": "Coordenada do Parque Lage."
+      },
+      {
+        "id": "visite_museus_museu_amanha",
+        "url": "https://visite.museus.gov.br/instituicoes/museu-do-amanha-2/",
+        "consultado_em": "2026-09-10",
+        "observacao": "Geolocalização e endereço institucional do Museu do Amanhã."
+      },
+      {
+        "id": "wikidata_coreto_vista_chinesa",
+        "url": "https://www.wikidata.org/wiki/Q67205436",
+        "consultado_em": "2026-09-10",
+        "observacao": "Coordenada do coreto da Vista Chinesa referenciada pelo Inventário dos Monumentos do Rio de Janeiro."
+      },
+      {
+        "id": "inea_praia_sao_conrado",
+        "url": "https://www.inea.rj.gov.br/wp-content/uploads/2018/12/Coordenadas-Geogr%C3%A1ficas-das-Esta%C3%A7%C3%B5es-de-Amostragem-Praias.pdf",
+        "consultado_em": "2026-09-10",
+        "observacao": "Estação de amostragem GV001 da Praia de São Conrado."
+      },
+      {
+        "id": "visite_museus_mam_rio",
+        "url": "https://visite.museus.gov.br/instituicoes/museu-de-arte-moderna-do-rio-de-janeiro-mam/",
+        "consultado_em": "2026-09-10",
+        "observacao": "Geolocalização e endereço institucional do MAM Rio."
+      }
+    ]
+  },
+  "regras": {
+    "locais": {
+      "chave_reconciliacao": "slug",
+      "ids_origem_somente_rastreabilidade": true,
+      "cidade_padrao_curada": "Rio de Janeiro",
+      "categorias": {
+        "Praias": "praias",
+        "Parques": "parques",
+        "Museus": "museus",
+        "Mirantes": "mirantes"
+      },
+      "campos_mock_nao_persistidos": [
+        "nota",
+        "totalAvaliacoes"
+      ],
+      "politica_imagem": "Persistir caminho público canônico sob /imagens/locais/. O arquivo de origem permanece no front-end e deverá ser copiado e renomeado para public/imagens/locais/ na fase de integração."
+    },
+    "avaliacoes": {
+      "chave_reconciliacao": [
+        "local_slug",
+        "autor",
+        "criado_em",
+        "nota",
+        "comentario"
+      ],
+      "resolucao_local": "Converter localId no slug do local do mesmo mock e resolver local_id pela linha persistida com esse slug.",
+      "normalizacao_data": "Converter YYYY-MM-DD em YYYY-MM-DDT12:00:00Z.",
+      "campos_mock_nao_persistidos": [
+        "id",
+        "localId",
+        "assinatura"
+      ]
+    }
+  },
+  "locais": [
+    {
+      "origem": {
+        "fonte": "mock_locais",
+        "id": 1,
+        "imagem": "src/assets/arpoador1.jpg",
+        "imagem_sha256": "5D6F1B660014C20347BC5554B6DA5B477A8FE660416FB5C837542B1EF4CFC00E"
+      },
+      "dados": {
+        "slug": "arpoador",
+        "nome": "Arpoador",
+        "categoria": "praias",
+        "descricao": "Entre o mar aberto e as pedras, o Arpoador entrega um fim de tarde clássico do Rio com clima de encontro, água azulada e vista ampla para Ipanema e Leblon.",
+        "cidade": "Rio de Janeiro",
+        "bairro": "Ipanema",
+        "regiao": "Zona Sul",
+        "imagem": "/imagens/locais/arpoador.jpg",
+        "destaque": true,
+        "latitude": -22.988,
+        "longitude": -43.191
+      },
+      "curadoria": {
+        "coordenadas_fonte": "ufrj_praia_arpoador",
+        "transformacoes": [
+          "Categoria normalizada de Praias para praias.",
+          "Cidade preenchida como Rio de Janeiro.",
+          "Acentuação da descrição revisada.",
+          "Caminho local de desenvolvimento substituído por caminho público canônico."
+        ]
+      }
+    },
+    {
+      "origem": {
+        "fonte": "mock_locais",
+        "id": 2,
+        "imagem": "src/assets/parque-lage1.jpg",
+        "imagem_sha256": "E1221A1FDFBE00BD85D2C2C0FB08EC0F8BA00EE7F42452C992D790F05ADD6191"
+      },
+      "dados": {
+        "slug": "parque-lage",
+        "nome": "Parque Lage",
+        "categoria": "parques",
+        "descricao": "Com jardins tropicais, trilhas leves e o casarão icônico aos pés do Corcovado, o Parque Lage mistura passeio cultural, pausa contemplativa e muito verde.",
+        "cidade": "Rio de Janeiro",
+        "bairro": "Jardim Botânico",
+        "regiao": "Zona Sul",
+        "imagem": "/imagens/locais/parque-lage.jpg",
+        "destaque": true,
+        "latitude": -22.9606,
+        "longitude": -43.212
+      },
+      "curadoria": {
+        "coordenadas_fonte": "wikidata_parque_lage",
+        "transformacoes": [
+          "Categoria normalizada de Parques para parques.",
+          "Cidade preenchida como Rio de Janeiro.",
+          "Acentuação da descrição revisada.",
+          "Caminho local de desenvolvimento substituído por caminho público canônico."
+        ]
+      }
+    },
+    {
+      "origem": {
+        "fonte": "mock_locais",
+        "id": 3,
+        "imagem": "src/assets/museu-do-amanha1.jpg",
+        "imagem_sha256": "B05F275078CC35A100E00C6EAC7C01BE7E49A262AC25F0EEDB7AF58430027630"
+      },
+      "dados": {
+        "slug": "museu-do-amanha",
+        "nome": "Museu do Amanhã",
+        "categoria": "museus",
+        "descricao": "Na orla revitalizada do Centro, o Museu do Amanhã combina arquitetura marcante, exposições imersivas e uma caminhada com vista para a Baía de Guanabara.",
+        "cidade": "Rio de Janeiro",
+        "bairro": "Centro",
+        "regiao": "Centro",
+        "imagem": "/imagens/locais/museu-do-amanha.jpg",
+        "destaque": true,
+        "latitude": -22.894105,
+        "longitude": -43.179381
+      },
+      "curadoria": {
+        "coordenadas_fonte": "visite_museus_museu_amanha",
+        "transformacoes": [
+          "Categoria normalizada de Museus para museus.",
+          "Cidade preenchida como Rio de Janeiro.",
+          "Bairro corrigido de Praça Mauá, que é o logradouro de origem, para Centro.",
+          "Acentuação da descrição revisada.",
+          "Caminho local de desenvolvimento substituído por caminho público canônico."
+        ]
+      }
+    },
+    {
+      "origem": {
+        "fonte": "mock_locais",
+        "id": 4,
+        "imagem": "src/assets/vista-chinesa1.jpg",
+        "imagem_sha256": "2E730604D8CEF5B2C3B6360026DDB5D354A60A7CCCB20AE6AC8B1DF7BB7A9860"
+      },
+      "dados": {
+        "slug": "vista-chinesa",
+        "nome": "Vista Chinesa",
+        "categoria": "mirantes",
+        "descricao": "No meio da Floresta da Tijuca, a Vista Chinesa revela um panorama amplo da cidade e recompensa o trajeto com uma das paisagens mais fotogênicas do Rio.",
+        "cidade": "Rio de Janeiro",
+        "bairro": "Alto da Boa Vista",
+        "regiao": "Zona Norte",
+        "imagem": "/imagens/locais/vista-chinesa.jpg",
+        "destaque": true,
+        "latitude": -22.973278,
+        "longitude": -43.249434
+      },
+      "curadoria": {
+        "coordenadas_fonte": "wikidata_coreto_vista_chinesa",
+        "transformacoes": [
+          "Categoria normalizada de Mirantes para mirantes.",
+          "Cidade preenchida como Rio de Janeiro.",
+          "Acentuação da descrição revisada.",
+          "Caminho local de desenvolvimento substituído por caminho público canônico."
+        ]
+      }
+    },
+    {
+      "origem": {
+        "fonte": "mock_locais",
+        "id": 5,
+        "imagem": "src/assets/praia-sao-conrado1.jpg",
+        "imagem_sha256": "D584224F187E7844A1DCBDB00D6220D8772CB44492844173C123D0441412814D"
+      },
+      "dados": {
+        "slug": "praia-de-sao-conrado",
+        "nome": "Praia de São Conrado",
+        "categoria": "praias",
+        "descricao": "Faixa de areia cercada por montanhas e voo livre no horizonte, ideal para quem gosta de mar, brisa forte e um visual dramático típico da costa carioca.",
+        "cidade": "Rio de Janeiro",
+        "bairro": "São Conrado",
+        "regiao": "Zona Sul",
+        "imagem": "/imagens/locais/praia-de-sao-conrado.jpg",
+        "destaque": true,
+        "latitude": -23.000006,
+        "longitude": -43.257528
+      },
+      "curadoria": {
+        "coordenadas_fonte": "inea_praia_sao_conrado",
+        "transformacoes": [
+          "Categoria normalizada de Praias para praias.",
+          "Cidade preenchida como Rio de Janeiro.",
+          "Acentuação da descrição revisada.",
+          "Caminho local de desenvolvimento substituído por caminho público canônico."
+        ]
+      }
+    },
+    {
+      "origem": {
+        "fonte": "mock_locais",
+        "id": 6,
+        "imagem": "src/assets/museu-arte-moderna1.jpg",
+        "imagem_sha256": "CA7352441EED178E8912D8F15F28FA93022F44E3F8565B4E8F2FAC48E9B43228"
+      },
+      "dados": {
+        "slug": "museu-de-arte-moderna",
+        "nome": "Museu de Arte Moderna",
+        "categoria": "museus",
+        "descricao": "Entre o jardim aberto e a arquitetura modernista, o MAM convida a ver arte com calma e ainda oferece um passeio bonito pela orla do Aterro.",
+        "cidade": "Rio de Janeiro",
+        "bairro": "Glória",
+        "regiao": "Zona Sul",
+        "imagem": "/imagens/locais/museu-de-arte-moderna.jpg",
+        "destaque": true,
+        "latitude": -22.913841,
+        "longitude": -43.171823
+      },
+      "curadoria": {
+        "coordenadas_fonte": "visite_museus_mam_rio",
+        "transformacoes": [
+          "Categoria normalizada de Museus para museus.",
+          "Cidade preenchida como Rio de Janeiro.",
+          "Bairro corrigido de Flamengo para Glória conforme o endereço institucional.",
+          "Caminho local de desenvolvimento substituído por caminho público canônico."
+        ]
+      }
+    }
+  ],
+  "avaliacoes": [
+    {
+      "origem": {
+        "fonte": "mock_avaliacoes",
+        "id": 1
+      },
+      "dados": {
+        "local_slug": "arpoador",
+        "autor": "Marina Costa",
+        "nota": 5,
+        "comentario": "Cheguei no fim da tarde e peguei um pôr do sol lindo. O clima ali é muito gostoso para caminhar sem pressa.",
+        "criado_em": "2026-06-05T12:00:00Z"
+      },
+      "transformacoes": [
+        "localId 1 resolvido para o slug arpoador.",
+        "Data sem horário convertida para 12:00:00Z.",
+        "Acentuação do comentário revisada.",
+        "Campo assinatura descartado."
+      ]
+    },
+    {
+      "origem": {
+        "fonte": "mock_avaliacoes",
+        "id": 2
+      },
+      "dados": {
+        "local_slug": "arpoador",
+        "autor": "Thiago Ramos",
+        "nota": 4,
+        "comentario": "Vale muito pela vista e pelas pedras. Fica bem cheio, mas ainda assim é um dos cantos mais bonitos da orla.",
+        "criado_em": "2026-06-02T12:00:00Z"
+      },
+      "transformacoes": [
+        "localId 1 resolvido para o slug arpoador.",
+        "Data sem horário convertida para 12:00:00Z.",
+        "Acentuação do comentário revisada.",
+        "Campo assinatura descartado."
+      ]
+    },
+    {
+      "origem": {
+        "fonte": "mock_avaliacoes",
+        "id": 3
+      },
+      "dados": {
+        "local_slug": "parque-lage",
+        "autor": "Camila Freitas",
+        "nota": 5,
+        "comentario": "Lugar perfeito para uma manhã tranquila. O casarão e o verde criam uma atmosfera muito especial.",
+        "criado_em": "2026-05-29T12:00:00Z"
+      },
+      "transformacoes": [
+        "localId 2 resolvido para o slug parque-lage.",
+        "Data sem horário convertida para 12:00:00Z.",
+        "Acentuação do comentário revisada.",
+        "Campo assinatura descartado."
+      ]
+    },
+    {
+      "origem": {
+        "fonte": "mock_avaliacoes",
+        "id": 4
+      },
+      "dados": {
+        "local_slug": "museu-do-amanha",
+        "autor": "Rafael Moura",
+        "nota": 4,
+        "comentario": "A arquitetura impressiona de longe e por dentro a visita rende boas reflexões. Gostei bastante da área externa também.",
+        "criado_em": "2026-06-01T12:00:00Z"
+      },
+      "transformacoes": [
+        "localId 3 resolvido para o slug museu-do-amanha.",
+        "Data sem horário convertida para 12:00:00Z.",
+        "Acentuação do comentário revisada.",
+        "Campo assinatura descartado."
+      ]
+    },
+    {
+      "origem": {
+        "fonte": "mock_avaliacoes",
+        "id": 5
+      },
+      "dados": {
+        "local_slug": "vista-chinesa",
+        "autor": "Bruna Salles",
+        "nota": 5,
+        "comentario": "Vista incrível e ar fresco. Fui cedo e peguei a cidade com luz linda e pouca movimentação.",
+        "criado_em": "2026-05-18T12:00:00Z"
+      },
+      "transformacoes": [
+        "localId 4 resolvido para o slug vista-chinesa.",
+        "Data sem horário convertida para 12:00:00Z.",
+        "Acentuação do comentário revisada.",
+        "Campo assinatura descartado."
+      ]
+    },
+    {
+      "origem": {
+        "fonte": "mock_avaliacoes",
+        "id": 6
+      },
+      "dados": {
+        "local_slug": "praia-de-sao-conrado",
+        "autor": "Daniel Pires",
+        "nota": 4,
+        "comentario": "A praia tem um visual bem marcante e rende fotos ótimas. O mar estava forte no dia, mas o passeio compensou.",
+        "criado_em": "2026-06-09T12:00:00Z"
+      },
+      "transformacoes": [
+        "localId 5 resolvido para o slug praia-de-sao-conrado.",
+        "Data sem horário convertida para 12:00:00Z.",
+        "Acentuação do comentário revisada.",
+        "Campo assinatura descartado."
+      ]
+    }
+  ],
+  "rejeicoes": [
+    {
+      "fonte": "sqlite_legado",
+      "tipo": "local",
+      "id_origem": 1,
+      "identificacao": "Praia do Leblon",
+      "codigo": "fora_do_manifesto_aprovado",
+      "motivo": "Não integra os seis locais aprovados e não possui slug, bairro, região, imagem ou coordenadas para atender ao contrato."
+    },
+    {
+      "fonte": "sqlite_legado",
+      "tipo": "local",
+      "id_origem": 2,
+      "identificacao": "Teste",
+      "codigo": "registro_de_teste",
+      "motivo": "Registro artificial previamente rejeitado no levantamento inicial e incompatível com o domínio."
+    },
+    {
+      "fonte": "sqlite_legado",
+      "tipo": "local",
+      "id_origem": 3,
+      "identificacao": "Planetário da Gávea",
+      "codigo": "fora_do_manifesto_aprovado",
+      "motivo": "Não integra os seis locais aprovados e não possui slug, bairro, região, imagem ou coordenadas para atender ao contrato."
+    },
+    {
+      "fonte": "sqlite_legado",
+      "tipo": "avaliacao",
+      "id_origem": 3,
+      "identificacao": "Leonardo",
+      "codigo": "local_rejeitado",
+      "motivo": "A avaliação referencia o registro artificial Teste, que foi rejeitado."
+    },
+    {
+      "fonte": "sqlite_legado",
+      "tipo": "avaliacao",
+      "id_origem": 4,
+      "identificacao": "Leonardo",
+      "codigo": "local_fora_do_manifesto",
+      "motivo": "A avaliação referencia Praia do Leblon, que não integra os seis locais aprovados."
+    }
+  ],
+  "resumo": {
+    "locais_aprovados": 6,
+    "avaliacoes_aprovadas": 6,
+    "locais_sqlite_rejeitados": 3,
+    "avaliacoes_sqlite_rejeitadas": 2,
+    "locais_sem_avaliacao_aprovada": [
+      "museu-de-arte-moderna"
+    ]
+  }
+}

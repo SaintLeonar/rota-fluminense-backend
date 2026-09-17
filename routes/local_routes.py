@@ -1,14 +1,9 @@
 from flask_openapi3 import APIBlueprint, Tag
 
+from schemas import local_schema
 from schemas.error import ErrorSchema
-from schemas.local_schema import (LocalDetalhadoSchema, LocalInputSchema,
-                                  LocalListSchema, LocalPathSchema,
-                                  LocalQuerySchema, LocalSchema,
-                                  apresenta_locais, apresenta_local)
-from services.local_service import (atualizar_local, buscar_local, criar_local,
-                                    deletar_local, listar_locais)
-from utils.exceptions import AppError
-from utils.serializers import serializar_local
+from services import local_service
+from utils.serializers import serializar_locais, serializar_local
 
 local_bp = APIBlueprint("locais", __name__)
 
@@ -22,80 +17,128 @@ local_tag = Tag(
 @local_bp.get(
     "/locais",
     tags=[local_tag],
-    responses={200: LocalListSchema, 404: ErrorSchema, 500: ErrorSchema},
+    summary="Listar locais turísticos",
+    description=(
+        "Lista locais com filtros exatos combinados por AND, paginação, "
+        "ordenação determinística e agregados derivados das avaliações."
+    ),
+    operation_id="listar_locais",
+    responses={
+        200: local_schema.LocalListSchema,
+        400: ErrorSchema,
+        503: ErrorSchema,
+        500: ErrorSchema,
+    },
 )
-def get_locais(query: LocalQuerySchema):
+def get_locais(query: local_schema.LocalQuerySchema):
     """Endpoint para listar os locais."""
-    try:
-        resultado = listar_locais(query.cidade, query.categoria)
-        return apresenta_locais(resultado)
-    except AppError as e:
-        return {"message": e.message}, e.status_code
-    except Exception:
-        return {"message": "Erro interno"}, 500
+    locais, total_itens, total_paginas = local_service.listar_locais(
+        query.cidade,
+        query.categoria,
+        query.destaque,
+        query.pagina,
+        query.por_pagina,
+        query.ordenar_por,
+    )
+    return serializar_locais(
+        locais,
+        pagina=query.pagina,
+        por_pagina=query.por_pagina,
+        total_itens=total_itens,
+        total_paginas=total_paginas,
+    )
 
 
 @local_bp.get(
-    "/locais/<int:local_id>",
+    "/locais/<slug>",
     tags=[local_tag],
-    responses={200: LocalDetalhadoSchema, 404: ErrorSchema, 500: ErrorSchema},
+    summary="Consultar local por slug",
+    description=(
+        "Retorna a representação canônica do local, sem incorporar a "
+        "coleção de avaliações."
+    ),
+    operation_id="consultar_local",
+    responses={
+        200: local_schema.LocalDetalhadoSchema,
+        400: ErrorSchema,
+        404: ErrorSchema,
+        503: ErrorSchema,
+        500: ErrorSchema,
+    },
 )
-def get_local(path: LocalPathSchema):
-    """Endpoint para buscar um local por ID."""
-    try:
-        local = buscar_local(path.local_id)
-        return apresenta_local(local)
-    except AppError as e:
-        return {"message": e.message}, e.status_code
-    except Exception:
-        return {"message": "Erro interno"}, 500
+def get_local(path: local_schema.LocalPathSchema):
+    """Endpoint para buscar um local pelo slug público."""
+    local = local_service.buscar_local(path.slug)
+    return serializar_local(local)
 
 
 @local_bp.post(
     "/locais",
     tags=[local_tag],
-    responses={201: LocalSchema, 400: ErrorSchema, 500: ErrorSchema},
+    summary="Criar local turístico",
+    description=(
+        "Cria um local completo. O slug é opcional e, quando omitido, é "
+        "gerado de forma canônica a partir do nome."
+    ),
+    operation_id="criar_local",
+    responses={
+        201: local_schema.LocalSchema,
+        400: ErrorSchema,
+        409: ErrorSchema,
+        503: ErrorSchema,
+        500: ErrorSchema,
+    },
 )
-def post_local(body: LocalInputSchema):
+def post_local(body: local_schema.LocalInputSchema):
     """Endpoint para criar um novo local."""
-    try:
-        local = criar_local(body.dict())
-
-        return serializar_local(local), 201
-    except AppError as e:
-        return {"message": e.message}, e.status_code
-    except Exception:
-        return {"message": "Erro interno"}, 500
+    local = local_service.criar_local(body.model_dump())
+    return serializar_local(local), 201
 
 
 @local_bp.put(
-    "/locais/<int:local_id>",
+    "/locais/<slug>",
     tags=[local_tag],
-    responses={200: LocalSchema, 400: ErrorSchema, 404: ErrorSchema, 500: ErrorSchema},
+    summary="Substituir local turístico",
+    description=(
+        "Substitui todos os dez campos mutáveis, preservando id, slug e "
+        "agregados derivados."
+    ),
+    operation_id="substituir_local",
+    responses={
+        200: local_schema.LocalSchema,
+        400: ErrorSchema,
+        404: ErrorSchema,
+        503: ErrorSchema,
+        500: ErrorSchema,
+    },
 )
-def put_local(path: LocalPathSchema, body: LocalInputSchema):
-    """Endpoint para atualizar um local."""
-    try:
-        local = atualizar_local(path.local_id, body.dict())
-
-        return serializar_local(local)
-    except AppError as e:
-        return {"message": e.message}, e.status_code
-    except Exception:
-        return {"message": "Erro interno"}, 500
+def put_local(
+    path: local_schema.LocalPathSchema,
+    body: local_schema.LocalUpdateSchema,
+):
+    """Endpoint para substituir os campos mutáveis de um local."""
+    local = local_service.atualizar_local(path.slug, body.model_dump())
+    return serializar_local(local)
 
 
 @local_bp.delete(
-    "/locais/<int:local_id>",
+    "/locais/<slug>",
     tags=[local_tag],
-    responses={204: None, 404: ErrorSchema, 500: ErrorSchema},
+    summary="Excluir local turístico",
+    description=(
+        "Exclui o local identificado pelo slug; avaliações relacionadas "
+        "são removidas pela integridade referencial do banco."
+    ),
+    operation_id="excluir_local",
+    responses={
+        204: None,
+        400: ErrorSchema,
+        404: ErrorSchema,
+        503: ErrorSchema,
+        500: ErrorSchema,
+    },
 )
-def delete_local(path: LocalPathSchema):
-    """Endpoint para deletar um local."""
-    try:
-        deletar_local(path.local_id)
-        return "", 204
-    except AppError as e:
-        return {"message": e.message}, e.status_code
-    except Exception:
-        return {"message": "Erro interno"}, 500
+def delete_local(path: local_schema.LocalPathSchema):
+    """Endpoint para excluir um local pelo slug público."""
+    local_service.deletar_local(path.slug)
+    return "", 204
