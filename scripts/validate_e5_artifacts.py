@@ -10,11 +10,19 @@ from urllib.parse import unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = ROOT / "docs" / "CONTRATO_API.md"
 HTTP_METHODS = {"get", "post", "put", "patch", "delete"}
+CLIMATE_OPERATION = ("GET", "/locais/{slug}/clima")
+CLIMATE_SUCCESS_EXAMPLES = {"provedor", "cacheValido"}
+CLIMATE_ERROR_EXAMPLES = {
+    "bancoIndisponivel",
+    "coordenadasIndisponiveis",
+    "climaIndisponivel",
+}
 
 EXPECTED_RESPONSES = {
     ("GET", "/locais"): {"200", "400", "500", "503"},
     ("POST", "/locais"): {"201", "400", "409", "500", "503"},
     ("GET", "/locais/{slug}"): {"200", "400", "404", "500", "503"},
+    CLIMATE_OPERATION: {"200", "400", "404", "500", "503"},
     ("PUT", "/locais/{slug}"): {"200", "400", "404", "500", "503"},
     ("DELETE", "/locais/{slug}"): {
         "204",
@@ -57,6 +65,7 @@ EXPECTED_SUCCESS_SCHEMAS = {
     ("GET", "/locais"): ("200", "LocalListSchema"),
     ("POST", "/locais"): ("201", "LocalSchema"),
     ("GET", "/locais/{slug}"): ("200", "LocalDetalhadoSchema"),
+    CLIMATE_OPERATION: ("200", "ClimaResponseSchema"),
     ("PUT", "/locais/{slug}"): ("200", "LocalSchema"),
     ("GET", "/locais/{slug}/avaliacoes"): (
         "200",
@@ -109,6 +118,35 @@ EXPECTED_SCHEMA_FIELDS = {
         "mensagem",
         "detalhes",
         "requisicao_id",
+    },
+    "ClimaLocalSchema": {"slug", "nome"},
+    "ClimaAtualSchema": {
+        "observado_em",
+        "temperatura_c",
+        "sensacao_termica_c",
+        "precipitacao_mm",
+        "velocidade_vento_kmh",
+        "codigo_meteorologico",
+        "descricao",
+        "icone",
+    },
+    "ClimaPrevisaoDiariaSchema": {
+        "data",
+        "temperatura_max_c",
+        "temperatura_min_c",
+        "probabilidade_precipitacao_max_pct",
+        "codigo_meteorologico",
+        "descricao",
+        "icone",
+    },
+    "ClimaCacheSchema": {"utilizado", "expira_em"},
+    "ClimaResponseSchema": {
+        "local",
+        "timezone",
+        "atual",
+        "previsao",
+        "atualizado_em",
+        "cache",
     },
 }
 
@@ -223,6 +261,13 @@ def _contract_operations():
     for match in pattern.finditer(section):
         path = re.sub(r"<([^>]+)>", r"{\1}", match.group("path"))
         operations[(match.group("method"), path)] = match.group("status")
+
+    climate_heading = "## Clima do local — implementado no Dia 4"
+    if climate_heading not in content:
+        raise ArtifactValidationError(
+            "A seção contratual de clima do Dia 4 está ausente."
+        )
+    operations[CLIMATE_OPERATION] = "200"
     return operations
 
 
@@ -337,6 +382,29 @@ def _validate_openapi_contract():
                     raise ArtifactValidationError(
                         "Resposta de erro sem o ErrorSchema canônico."
                     )
+
+    climate_responses = operations[CLIMATE_OPERATION]["responses"]
+    success_media = climate_responses["200"]["content"]["application/json"]
+    if set(success_media.get("examples", {})) != CLIMATE_SUCCESS_EXAMPLES:
+        raise ArtifactValidationError(
+            "Exemplos de sucesso climático divergentes no Swagger."
+        )
+    provider = success_media["examples"]["provedor"]["value"]
+    cached = success_media["examples"]["cacheValido"]["value"]
+    if provider["cache"]["utilizado"] is not False:
+        raise ArtifactValidationError(
+            "O exemplo do provedor deve informar cache não utilizado."
+        )
+    if cached["cache"]["utilizado"] is not True:
+        raise ArtifactValidationError(
+            "O exemplo de cache deve informar cache utilizado."
+        )
+
+    error_media = climate_responses["503"]["content"]["application/json"]
+    if set(error_media.get("examples", {})) != CLIMATE_ERROR_EXAMPLES:
+        raise ArtifactValidationError(
+            "Exemplos de indisponibilidade climática divergentes."
+        )
 
     return len(operations), len(schemas)
 

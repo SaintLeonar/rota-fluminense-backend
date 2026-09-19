@@ -55,3 +55,16 @@ class ErrorSchema(BaseModel):
     )
 
     erro: ErrorContentSchema = Field(description="Conteúdo público do erro.")
+
+
+CLIMATE_SERVICE_UNAVAILABLE_RESPONSE = {
+    "description": (
+        "Persistência, coordenadas ou serviço climático indisponível."
+    ),
+    "content": {
+        "application/json": {
+            "schema": {"$ref": "#/components/schemas/ErrorSchema"},
+            "examples": openapi_examples.CLIMATE_SERVICE_ERROR_EXAMPLES,
+        }
+    },
+}

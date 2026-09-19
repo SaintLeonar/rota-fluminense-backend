@@ -5,6 +5,10 @@ from flask_openapi3 import Info, OpenAPI, Tag
 from routes.avaliacao_routes import avaliacao_bp
 from routes.local_routes import local_bp
 from schemas.error import ErrorSchema
+from services.open_meteo_cache import OPEN_METEO_CACHE
+from services.open_meteo_client import OPEN_METEO_CLIENT
+from services.open_meteo_config import OPEN_METEO_SETTINGS
+from services.open_meteo_service import OPEN_METEO_SERVICE
 from utils import error_handlers
 
 info = Info(
@@ -25,6 +29,10 @@ app = OpenAPI(
     validation_error_model=ErrorSchema,
     validation_error_callback=error_handlers.tratar_erro_validacao,
 )
+app.config["OPEN_METEO_SETTINGS"] = OPEN_METEO_SETTINGS
+app.config["OPEN_METEO_CLIENT"] = OPEN_METEO_CLIENT
+app.config["OPEN_METEO_CACHE"] = OPEN_METEO_CACHE
+app.config["OPEN_METEO_SERVICE"] = OPEN_METEO_SERVICE
 error_handlers.registrar_manipuladores_erro(app)
 
 app.register_api(local_bp)

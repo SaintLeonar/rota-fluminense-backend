@@ -1,8 +1,10 @@
+from flask import current_app
 from flask_openapi3 import APIBlueprint, Tag
 
-from schemas import local_schema
-from schemas.error import ErrorSchema
+from schemas import clima_schema, local_schema
+from schemas.error import CLIMATE_SERVICE_UNAVAILABLE_RESPONSE, ErrorSchema
 from services import local_service
+from utils import error_handlers
 from utils.serializers import serializar_locais, serializar_local
 
 local_bp = APIBlueprint("locais", __name__)
@@ -70,6 +72,33 @@ def get_local(path: local_schema.LocalPathSchema):
     """Endpoint para buscar um local pelo slug público."""
     local = local_service.buscar_local(path.slug)
     return serializar_local(local)
+
+
+@local_bp.get(
+    "/locais/<slug>/clima",
+    tags=[local_tag],
+    summary="Consultar clima do local",
+    description=(
+        "Retorna as condições atuais e a previsão de três dias usando as "
+        "coordenadas persistidas do local, com metadados de cache."
+    ),
+    operation_id="consultar_clima_local",
+    responses={
+        200: clima_schema.ClimaResponseSchema,
+        400: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+        503: CLIMATE_SERVICE_UNAVAILABLE_RESPONSE,
+    },
+)
+def get_clima_local(path: local_schema.LocalPathSchema):
+    """Endpoint para consultar o clima associado a um local."""
+    service = current_app.config["OPEN_METEO_SERVICE"]
+    clima = service.consultar_clima(
+        path.slug,
+        requisicao_id=error_handlers.obter_requisicao_id(),
+    )
+    return clima.model_dump(mode="json")
 
 
 @local_bp.post(
