@@ -12,9 +12,11 @@ OpenAPI.
 - Contrato implementado até o Dia 4: [`docs/CONTRATO_API.md`](docs/CONTRATO_API.md).
 - Comandos reproduzíveis de operação: [`docs/COMANDOS.md`](docs/COMANDOS.md).
 - Guia rápido para iniciar e testar: [`docs/INSTRUCOES_START_BACKEND_E_TESTES.md`](docs/INSTRUCOES_START_BACKEND_E_TESTES.md).
+- Roteiro automatizado e checklist do Dia 6: [`docs/implementacoes/dia-6-conteinerizacao-completa/INSTRUCOES_TESTES_INTEGRADOS_DIA_6.md`](docs/implementacoes/dia-6-conteinerizacao-completa/INSTRUCOES_TESTES_INTEGRADOS_DIA_6.md).
 - Resumo da API de locais e avaliações: [`docs/implementacoes/dia-3-api-locais-e-avaliacoes/RESUMO_dia_3_api_de_locais_e_avaliacoes.md`](docs/implementacoes/dia-3-api-locais-e-avaliacoes/RESUMO_dia_3_api_de_locais_e_avaliacoes.md).
 - Resumo da integração meteorológica: [`docs/implementacoes/dia-4-servico-open-meteo/RESUMO_dia_4_servico_open_meteo.md`](docs/implementacoes/dia-4-servico-open-meteo/RESUMO_dia_4_servico_open_meteo.md).
 - Implementação de MySQL, migrações e seed: [resumo](docs/implementacoes/dia-2-mysql-migracoes-e-seed/RESUMO_dia_2_mysql_migracoes_e_seed.md) e [plano detalhado](docs/implementacoes/dia-2-mysql-migracoes-e-seed/TODO_dia_2_mysql_migracoes_e_seed.md).
+- Conteinerização completa: [resumo do Dia 6](docs/implementacoes/dia-6-conteinerizacao-completa/RESUMO_dia_6_conteinerizacao_completa.md) e [plano detalhado](docs/implementacoes/dia-6-conteinerizacao-completa/TODO_dia_6_conteinerizacao_completa.md).
 
 O Swagger e o contrato estão alinhados para as dez operações canônicas
 entregues até o Dia 4, incluindo a consulta de clima atual e previsão de três
@@ -42,6 +44,14 @@ dias pelo `slug` de um local.
 - Python 3.10 ou superior.
 - Docker Desktop ou Docker Engine com o plugin Compose.
 - Git para clonar o repositório.
+
+Para a pilha completa, mantenha os repositórios irmãos sob o mesmo diretório:
+
+```text
+<diretorio-de-trabalho>/
+├── rota-fluminense-backend/
+└── rota-fluminense-front-end-avancado/
+```
 
 Confirme as ferramentas antes de iniciar:
 
@@ -97,23 +107,58 @@ As duas configurações meteorológicas são validadas na inicialização. Valor
 vazios, malformados ou fora dos intervalos impedem a aplicação de iniciar. A
 API pública gratuita do Open-Meteo não exige chave neste MVP.
 
-O arquivo `docker-compose.yml` mantém o MySQL apenas na rede interna. Como a
-API ainda roda no host, use também `compose.mysql-host-access.example.yml`, que
-publica a porta somente em `127.0.0.1`.
+O `docker-compose.yml` é o fluxo principal: constrói front-end e back-end,
+mantém o MySQL apenas na rede interna e monta a `DATABASE_URL` do contêiner com
+o hostname `mysql`. A `DATABASE_URL` do `.env` é usada somente no fluxo nativo
+alternativo, em conjunto com `compose.mysql-host-access.example.yml`.
 
-O `.env.example` já usa `127.0.0.1` e a porta `MYSQL_HOST_PORT=3306`, pois a
-API é executada no host nesta etapa. Carregue a URL no terminal sem imprimi-la:
+Para o fluxo nativo, carregue a URL no terminal sem imprimi-la:
 
 ```powershell
 $envConfig = ConvertFrom-StringData -StringData (Get-Content .env -Raw)
 $env:DATABASE_URL = $envConfig.DATABASE_URL
 ```
 
-Se a porta local for alterada, atualize `MYSQL_HOST_PORT` e a porta presente em
-`DATABASE_URL`. Quando o back-end for conteinerizado em uma etapa futura, a URL
-do contêiner deverá usar o host interno `mysql`.
+Se a porta local do override for alterada, atualize `MYSQL_HOST_PORT` e a porta
+presente em `DATABASE_URL`.
 
-## Criação e execução local
+## Execução recomendada via Docker Compose
+
+Na raiz deste repositório, construa e suba toda a pilha:
+
+```powershell
+docker compose --env-file .env up --build --detach --wait
+docker compose --env-file .env ps
+```
+
+O entrypoint do back-end aplica as migrações e reconcilia o seed antes de
+iniciar o Gunicorn. Aguarde os três serviços ficarem `healthy` e acesse:
+
+- interface: `http://localhost:5173`;
+- API: `http://localhost:5000`;
+- Swagger: `http://localhost:5000/openapi`;
+- OpenAPI JSON: `http://localhost:5000/openapi/openapi.json`.
+
+Para acompanhar a inicialização do back-end:
+
+```powershell
+docker compose --env-file .env logs -f backend
+```
+
+Interrompa a exibição com `Ctrl+C`; isso não para os serviços. Para encerrar a
+pilha preservando o banco:
+
+```powershell
+docker compose --env-file .env down
+```
+
+Não acrescente `--volumes` se quiser manter os dados. Esse sinalizador remove o
+volume nomeado do MySQL e apaga os dados persistidos.
+
+## Fluxo nativo alternativo
+
+Use este fluxo somente quando precisar executar Python e Vite diretamente no
+host. Ele exige o override explícito que publica o MySQL apenas no loopback.
 
 1. Inicie o MySQL e aguarde o healthcheck:
 

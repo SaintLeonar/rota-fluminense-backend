@@ -1,0 +1,38 @@
+name: rota-fluminense-dia7-test
+
+services:
+  mysql:
+    image: mysql:8.4.11
+    restart: "no"
+    environment:
+      MYSQL_DATABASE: ${TEST_MYSQL_DATABASE:-rota_fluminense_test}
+      MYSQL_USER: ${TEST_MYSQL_USER:-usuario_teste}
+      MYSQL_PASSWORD: ${TEST_MYSQL_PASSWORD:-senha_teste_local}
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+    expose:
+      - "3306"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          MYSQL_PWD="$${MYSQL_PASSWORD}"
+          mysqladmin ping
+          --host=127.0.0.1
+          --user="$${MYSQL_USER}"
+          --protocol=tcp
+          --silent
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    volumes:
+      - mysql_test_data:/var/lib/mysql
+    networks:
+      - test_backend
+
+networks:
+  test_backend:
+    internal: true
+
+volumes:
+  mysql_test_data:

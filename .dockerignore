@@ -1,0 +1,50 @@
+# Controle de versão e configurações do editor
+.git/
+.gitattributes
+.gitignore
+.vscode/
+
+# Ambientes e configurações locais
+.env
+.env.*
+!.env.example
+.venv/
+
+# Caches e artefatos Python
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.egg-info/
+
+# Dados locais, backups e temporários
+database.db
+*.sqlite
+*.sqlite3
+backups/
+tmp/
+.tmp/
+*.log
+
+# Resultados de build e dependências de outros runtimes
+build/
+dist/
+node_modules/
+
+# Artefatos de desenvolvimento não usados na imagem
+docs/
+tests/
+README.md
+setup.cfg
+docker-compose*.yml
+compose*.yml
+
+# Materiais criptográficos locais
+*.key
+*.pem
+*.p12
+*.pfx

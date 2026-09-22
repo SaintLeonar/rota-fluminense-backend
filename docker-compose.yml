@@ -1,4 +1,39 @@
 services:
+  frontend:
+    image: rota-fluminense-frontend:local
+    build:
+      context: ../rota-fluminense-front-end-avancado
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:5000
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:5173:5173"
+    networks:
+      - frontend
+
+  backend:
+    image: rota-fluminense-backend:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      APP_ENV: ${APP_ENV:?APP_ENV is required}
+      DATABASE_URL: mysql+pymysql://${MYSQL_USER:?MYSQL_USER is required}:${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}@mysql:3306/${MYSQL_DATABASE:?MYSQL_DATABASE is required}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?CORS_ALLOWED_ORIGINS is required}
+      OPEN_METEO_TIMEOUT_SECONDS: ${OPEN_METEO_TIMEOUT_SECONDS:-5}
+      OPEN_METEO_CACHE_TTL_SECONDS: ${OPEN_METEO_CACHE_TTL_SECONDS:-1800}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:5000:5000"
+    networks:
+      - backend
+      - frontend
+
   mysql:
     image: mysql:8.4.11
     restart: unless-stopped
@@ -31,6 +66,8 @@ services:
 networks:
   backend:
     internal: true
+  frontend:
+    internal: false
 
 volumes:
   mysql_data:
