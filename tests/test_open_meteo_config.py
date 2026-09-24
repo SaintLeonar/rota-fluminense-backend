@@ -9,6 +9,7 @@ from pathlib import Path
 from services import open_meteo_config
 
 CACHE_TTL_ENV_VAR = open_meteo_config.CACHE_TTL_ENV_VAR
+CA_FILE_ENV_VAR = open_meteo_config.CA_FILE_ENV_VAR
 DEFAULT_CACHE_TTL_SECONDS = open_meteo_config.DEFAULT_CACHE_TTL_SECONDS
 DEFAULT_TIMEOUT_SECONDS = open_meteo_config.DEFAULT_TIMEOUT_SECONDS
 TIMEOUT_ENV_VAR = open_meteo_config.TIMEOUT_ENV_VAR
@@ -28,17 +29,26 @@ class OpenMeteoConfigurationTestCase(unittest.TestCase):
             settings.cache_ttl_seconds,
             DEFAULT_CACHE_TTL_SECONDS,
         )
+        self.assertIsNone(settings.ca_file)
 
     def test_valid_values_are_normalized(self):
         settings = load_open_meteo_settings(
             {
                 TIMEOUT_ENV_VAR: " 2.50 ",
                 CACHE_TTL_ENV_VAR: " 3600 ",
+                CA_FILE_ENV_VAR: " /run/certs/local-proxy-ca.crt ",
             }
         )
 
         self.assertEqual(settings.timeout_seconds, 2.5)
         self.assertEqual(settings.cache_ttl_seconds, 3600)
+        self.assertEqual(settings.ca_file, "/run/certs/local-proxy-ca.crt")
+
+    def test_invalid_ca_file_values_are_rejected(self):
+        for value in ("", "   ", "arquivo\x00invalido.crt"):
+            with self.subTest(value=value):
+                with self.assertRaises(OpenMeteoConfigurationError):
+                    load_open_meteo_settings({CA_FILE_ENV_VAR: value})
 
     def test_inclusive_boundaries_are_accepted(self):
         for timeout in ("0.1", "30.0"):

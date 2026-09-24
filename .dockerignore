@@ -46,5 +46,6 @@ compose*.yml
 # Materiais criptográficos locais
 *.key
 *.pem
+*.crt
 *.p12
 *.pfx

@@ -33,4 +33,4 @@ HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=5 \
 
 ENTRYPOINT ["docker-entrypoint"]
 
-CMD ["gunicorn", "--workers", "1", "--worker-class", "sync", "--bind", "0.0.0.0:5000", "--access-logfile=-", "--error-logfile=-", "app:app"]
+CMD ["gunicorn", "--workers", "1", "--worker-class", "gthread", "--threads", "4", "--timeout", "30", "--bind", "0.0.0.0:5000", "--access-logfile=-", "--error-logfile=-", "app:app"]

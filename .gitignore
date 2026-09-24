@@ -4,6 +4,7 @@ __pycache__/
 .env
 .env.*
 !.env.example
+*.crt
 database.db
 
 # Override local para acesso temporário do host ao MySQL

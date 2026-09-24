@@ -16,7 +16,7 @@ class AvaliacaoInputSchema(BaseModel):
 
     autor: Texto120 = Field(
         description="Nome público da pessoa autora da avaliação.",
-        examples=["Marina Costa"],
+        examples=["Teste Swagger"],
     )
     nota: Nota = Field(
         description="Nota inteira entre 1 e 5.",
@@ -38,7 +38,7 @@ class AvaliacaoUpdateSchema(BaseModel):
     autor: Optional[Texto120] = Field(
         default=None,
         description="Novo nome da pessoa autora, quando enviado.",
-        examples=["Marina Costa"],
+        examples=["Teste Atualizacao Swagger"],
     )
     nota: Optional[Nota] = Field(
         default=None,
@@ -72,7 +72,7 @@ class AvaliacaoSchema(BaseModel):
         extra="forbid",
         json_schema_extra={"example": openapi_examples.EVALUATION_RESPONSE_EXAMPLE},
         openapi_extra={
-            "description": "Representação canônica de uma avaliação.",
+            "description": "Representação de uma avaliação.",
             "example": openapi_examples.EVALUATION_RESPONSE_EXAMPLE,
         },
     )
@@ -109,7 +109,7 @@ class AvaliacaoLocalPathSchema(BaseModel):
     model_config = pydantic.ConfigDict(extra="forbid")
 
     slug: Slug = Field(
-        description="Slug público canônico do local.",
+        description="Slug público do local.",
         json_schema_extra={"example": "arpoador"},
     )
 

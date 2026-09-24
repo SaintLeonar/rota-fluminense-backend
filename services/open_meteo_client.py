@@ -1,13 +1,20 @@
 import atexit
 import logging
 import re
+import ssl
 import time
 from collections.abc import Callable
 
+import certifi
 import httpx
 
 from services import open_meteo_transformer
-from services.open_meteo_config import OPEN_METEO_SETTINGS, OpenMeteoSettings
+from services.open_meteo_config import (
+    CA_FILE_ENV_VAR,
+    OPEN_METEO_SETTINGS,
+    OpenMeteoConfigurationError,
+    OpenMeteoSettings,
+)
 from utils.exceptions import ClimaIndisponivelError
 
 OPEN_METEO_BASE_URL = "https://api.open-meteo.com"
@@ -42,6 +49,21 @@ _LOGGER = logging.getLogger(__name__)
 _REQUEST_ID_PATTERN = re.compile(r"req_[0-9a-f]{32}")
 
 
+def _build_tls_verifier(ca_file: str | None) -> bool | ssl.SSLContext:
+    if ca_file is None:
+        return True
+
+    try:
+        context = ssl.create_default_context(cafile=certifi.where())
+        context.load_verify_locations(cafile=ca_file)
+    except (OSError, ssl.SSLError):
+        raise OpenMeteoConfigurationError(
+            f"A variável de ambiente {CA_FILE_ENV_VAR} deve indicar um "
+            "arquivo PEM legível com uma autoridade certificadora adicional."
+        ) from None
+    return context
+
+
 def _safe_request_id(value: str | None) -> str:
     if isinstance(value, str) and _REQUEST_ID_PATTERN.fullmatch(value):
         return value
@@ -66,9 +88,10 @@ class OpenMeteoClient:
             max_keepalive_connections=MAX_KEEPALIVE_CONNECTIONS,
             keepalive_expiry=KEEPALIVE_EXPIRY_SECONDS,
         )
+        tls_verifier = _build_tls_verifier(settings.ca_file)
         if transport is None:
             transport = httpx.HTTPTransport(
-                verify=True,
+                verify=tls_verifier,
                 trust_env=False,
                 http1=True,
                 http2=False,
@@ -78,7 +101,7 @@ class OpenMeteoClient:
         self._client = httpx.Client(
             base_url=OPEN_METEO_BASE_URL,
             headers=_DEFAULT_HEADERS,
-            verify=True,
+            verify=tls_verifier,
             trust_env=False,
             http1=True,
             http2=False,

@@ -57,7 +57,7 @@ class ClimaLocalSchema(BaseModel):
     )
 
     slug: validacao.Slug = Field(
-        description="Identificador público estável do local.",
+        description="Identificador público do local.",
         examples=["arpoador"],
     )
     nome: validacao.Texto120 = Field(

@@ -26,7 +26,7 @@ class ErrorContentSchema(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     codigo: str = Field(
-        description="Código público e estável do erro.",
+        description="Código público do erro.",
         examples=["requisicao_invalida"],
     )
     mensagem: str = Field(

@@ -153,6 +153,7 @@ codifique-os ao montar `DATABASE_URL`.
 | `CORS_ALLOWED_ORIGINS` | Origem permitida para o front-end. |
 | `OPEN_METEO_TIMEOUT_SECONDS` | Timeout externo em segundos; padrão `5`, intervalo de `0.1` a `30`. |
 | `OPEN_METEO_CACHE_TTL_SECONDS` | TTL do cache em segundos; padrão `1800`, intervalo de `1` a `86400`. |
+| `OPEN_METEO_CA_FILE` | Opcional; arquivo PEM de CA adicional dentro do processo para ambientes com inspeção HTTPS. |
 
 `CORS_ALLOWED_ORIGINS` é obrigatória e aceita uma lista separada por vírgulas
 de origens HTTP/HTTPS explícitas, por exemplo
@@ -311,6 +312,32 @@ limitada a uso não comercial, sob CC BY 4.0, e informava limites de 600
 chamadas por minuto, 5.000 por hora e 10.000 por dia. Como os termos podem
 mudar, atribuição, licença, volume e plano aplicável devem ser reconferidos
 antes de publicação, uso comercial ou mudança relevante de tráfego.
+
+### CA adicional para ambientes com inspeção HTTPS
+
+O fluxo padrão valida o Open-Meteo com as autoridades públicas do `certifi` e
+não exige configuração adicional. Se um antivírus ou proxy corporativo
+substituir certificados HTTPS, exporte a autoridade raiz em formato PEM/Base-64
+para um arquivo local `.crt`, mantenha-o fora do Git e defina no `.env`:
+
+```dotenv
+OPEN_METEO_CA_HOST_PATH=C:/caminho/local/proxy-root-ca.crt
+```
+
+Suba a pilha acrescentando o override versionado:
+
+```powershell
+docker compose --env-file .env -f docker-compose.yml -f compose.custom-ca.example.yml up --build --detach --wait
+```
+
+O override monta o certificado como somente leitura e define
+`OPEN_METEO_CA_FILE=/run/certs/local-proxy-ca.crt` apenas no backend. O cliente
+mantém o bundle público e acrescenta essa CA; a verificação de hostname e da
+cadeia TLS continua ativa. Arquivo ausente, ilegível ou inválido impede a
+inicialização sem expor seu caminho. Nunca use `verify=False`.
+
+Quem não utiliza inspeção HTTPS deve continuar usando apenas o Compose
+principal, sem essas variáveis nem o override.
 
 ## Operação do banco e das migrações
 

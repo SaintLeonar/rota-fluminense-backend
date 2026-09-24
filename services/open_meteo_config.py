@@ -6,6 +6,7 @@ from decimal import Decimal, InvalidOperation
 
 TIMEOUT_ENV_VAR = "OPEN_METEO_TIMEOUT_SECONDS"
 CACHE_TTL_ENV_VAR = "OPEN_METEO_CACHE_TTL_SECONDS"
+CA_FILE_ENV_VAR = "OPEN_METEO_CA_FILE"
 
 DEFAULT_TIMEOUT_SECONDS = 5.0
 MIN_TIMEOUT_SECONDS = Decimal("0.1")
@@ -29,6 +30,7 @@ class OpenMeteoSettings:
 
     timeout_seconds: float
     cache_ttl_seconds: int
+    ca_file: str | None = None
 
 
 def _timeout_error() -> OpenMeteoConfigurationError:
@@ -42,6 +44,13 @@ def _cache_ttl_error() -> OpenMeteoConfigurationError:
     return OpenMeteoConfigurationError(
         f"A variável de ambiente {CACHE_TTL_ENV_VAR} deve conter um inteiro "
         "entre 1 e 86400 segundos."
+    )
+
+
+def _ca_file_error() -> OpenMeteoConfigurationError:
+    return OpenMeteoConfigurationError(
+        f"A variável de ambiente {CA_FILE_ENV_VAR} deve indicar um arquivo "
+        "PEM legível com uma autoridade certificadora adicional."
     )
 
 
@@ -85,6 +94,17 @@ def _load_cache_ttl_seconds(environment: Mapping[str, str]) -> int:
     return parsed
 
 
+def _load_ca_file(environment: Mapping[str, str]) -> str | None:
+    raw_value = environment.get(CA_FILE_ENV_VAR)
+    if raw_value is None:
+        return None
+
+    value = raw_value.strip()
+    if not value or "\x00" in value:
+        raise _ca_file_error()
+    return value
+
+
 def load_open_meteo_settings(
     environment: Mapping[str, str] | None = None,
 ) -> OpenMeteoSettings:
@@ -93,6 +113,7 @@ def load_open_meteo_settings(
     return OpenMeteoSettings(
         timeout_seconds=_load_timeout_seconds(source),
         cache_ttl_seconds=_load_cache_ttl_seconds(source),
+        ca_file=_load_ca_file(source),
     )
 
 

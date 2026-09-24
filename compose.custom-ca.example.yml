@@ -1,0 +1,9 @@
+services:
+  backend:
+    environment:
+      OPEN_METEO_CA_FILE: /run/certs/local-proxy-ca.crt
+    volumes:
+      - type: bind
+        source: ${OPEN_METEO_CA_HOST_PATH:?OPEN_METEO_CA_HOST_PATH is required}
+        target: /run/certs/local-proxy-ca.crt
+        read_only: true

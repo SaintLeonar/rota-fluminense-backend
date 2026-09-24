@@ -193,6 +193,63 @@ class OpenMeteoClientTestCase(unittest.TestCase):
             configured_transport,
         )
 
+    def test_additional_ca_extends_default_certifi_trust(self):
+        settings = OpenMeteoSettings(
+            timeout_seconds=2.5,
+            cache_ttl_seconds=1800,
+            ca_file="/run/certs/local-proxy-ca.crt",
+        )
+        context = Mock()
+        configured_transport = Mock(spec=httpx.BaseTransport)
+
+        with (
+            patch.object(
+                open_meteo_client.certifi,
+                "where",
+                return_value="/certifi/cacert.pem",
+            ),
+            patch.object(
+                open_meteo_client.ssl,
+                "create_default_context",
+                return_value=context,
+            ) as context_factory,
+            patch.object(
+                open_meteo_client.httpx,
+                "HTTPTransport",
+                return_value=configured_transport,
+            ) as transport_factory,
+            patch.object(open_meteo_client.httpx, "Client") as client_factory,
+        ):
+            OpenMeteoClient(settings)
+
+        context_factory.assert_called_once_with(cafile="/certifi/cacert.pem")
+        context.load_verify_locations.assert_called_once_with(
+            cafile="/run/certs/local-proxy-ca.crt"
+        )
+        self.assertIs(transport_factory.call_args.kwargs["verify"], context)
+        self.assertIs(client_factory.call_args.kwargs["verify"], context)
+
+    def test_invalid_additional_ca_fails_without_exposing_path(self):
+        secret_path = "/segredo/certificado-invalido.crt"
+        settings = OpenMeteoSettings(
+            timeout_seconds=2.5,
+            cache_ttl_seconds=1800,
+            ca_file=secret_path,
+        )
+
+        with patch.object(
+            open_meteo_client.ssl,
+            "create_default_context",
+            side_effect=OSError(secret_path),
+        ):
+            with self.assertRaises(
+                open_meteo_client.OpenMeteoConfigurationError
+            ) as caught:
+                OpenMeteoClient(settings)
+
+        self.assertIn("OPEN_METEO_CA_FILE", str(caught.exception))
+        self.assertNotIn(secret_path, str(caught.exception))
+
     def test_does_not_follow_redirects(self):
         requests = []
 

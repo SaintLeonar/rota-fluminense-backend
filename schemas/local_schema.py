@@ -16,7 +16,7 @@ class LocalMutableFieldsSchema(BaseModel):
         examples=["Arpoador"],
     )
     categoria: validacao.Categoria = Field(
-        description="Categoria canônica usada em filtros.",
+        description="Categoria usada em filtros.",
         examples=["praias"],
     )
     descricao: validacao.Texto2000 = Field(
@@ -62,7 +62,7 @@ class LocalInputSchema(LocalMutableFieldsSchema):
     slug: Optional[validacao.Slug] = Field(
         default=None,
         description=(
-            "Identificador público canônico; quando omitido, é gerado a "
+            "Identificador público; quando omitido, é gerado a "
             "partir do nome."
         ),
         examples=["arpoador"],
@@ -86,7 +86,7 @@ class LocalSchema(BaseModel):
         extra="forbid",
         json_schema_extra={"example": openapi_examples.LOCAL_RESPONSE_EXAMPLE},
         openapi_extra={
-            "description": "Representação canônica de um local turístico.",
+            "description": "Representação de um local turístico.",
             "example": openapi_examples.LOCAL_RESPONSE_EXAMPLE,
         },
     )
@@ -100,7 +100,7 @@ class LocalSchema(BaseModel):
         examples=["arpoador"],
     )
     nome: validacao.Texto120 = Field(description="Nome público do local.")
-    categoria: validacao.Categoria = Field(description="Categoria canônica do local.")
+    categoria: validacao.Categoria = Field(description="Categoria do local.")
     descricao: validacao.Texto2000 = Field(description="Descrição pública do local.")
     cidade: validacao.Cidade = Field(description="Município fluminense.")
     bairro: validacao.Texto120 = Field(description="Bairro do local.")
@@ -131,7 +131,7 @@ class LocalDetalhadoSchema(LocalSchema):
         extra="forbid",
         json_schema_extra={"example": openapi_examples.LOCAL_RESPONSE_EXAMPLE},
         openapi_extra={
-            "description": "Detalhe canônico de um local turístico.",
+            "description": "Detalhe de um local turístico.",
             "example": openapi_examples.LOCAL_RESPONSE_EXAMPLE,
         },
     )
@@ -188,7 +188,7 @@ class LocalQuerySchema(BaseModel):
     )
     categoria: Optional[validacao.Categoria] = Field(
         default=None,
-        description="Filtra pela categoria canônica.",
+        description="Filtra pela categoria.",
         json_schema_extra={"example": "praias"},
     )
     destaque: Optional[validacao.DestaqueConsulta] = Field(
@@ -208,7 +208,7 @@ class LocalQuerySchema(BaseModel):
     )
     ordenar_por: validacao.OrdenacaoLocal = Field(
         default="nome_asc",
-        description="Critério de ordenação determinística.",
+        description="Critério de ordenação.",
         json_schema_extra={"example": "nota_media_desc"},
     )
 
@@ -217,7 +217,7 @@ class LocalPathSchema(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     slug: validacao.Slug = Field(
-        description="Slug público canônico do local.",
+        description="Slug público do local.",
         json_schema_extra={"example": "arpoador"},
     )
 
