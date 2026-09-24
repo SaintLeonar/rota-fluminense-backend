@@ -36,19 +36,13 @@ _EXPECTED_DAILY_UNITS = {
 }
 
 _ERROR_MESSAGES = {
-    "status_http_invalido": (
-        "O Open-Meteo respondeu com status HTTP inesperado."
-    ),
-    "resposta_muito_grande": (
-        "A resposta do Open-Meteo excede o limite permitido."
-    ),
+    "status_http_invalido": ("O Open-Meteo respondeu com status HTTP inesperado."),
+    "resposta_muito_grande": ("A resposta do Open-Meteo excede o limite permitido."),
     "tipo_conteudo_invalido": (
         "A resposta do Open-Meteo não possui conteúdo JSON compatível."
     ),
     "json_invalido": "A resposta do Open-Meteo contém JSON inválido.",
-    "estrutura_invalida": (
-        "A resposta do Open-Meteo não segue a estrutura esperada."
-    ),
+    "estrutura_invalida": ("A resposta do Open-Meteo não segue a estrutura esperada."),
 }
 
 
@@ -199,13 +193,9 @@ def _transform_current(
     return ClimaAtualOpenMeteo(
         observado_em=observed_at,
         temperatura_c=_finite_number(_required(current, "temperature_2m")),
-        sensacao_termica_c=_finite_number(
-            _required(current, "apparent_temperature")
-        ),
+        sensacao_termica_c=_finite_number(_required(current, "apparent_temperature")),
         precipitacao_mm=_finite_number(_required(current, "precipitation")),
-        velocidade_vento_kmh=_finite_number(
-            _required(current, "wind_speed_10m")
-        ),
+        velocidade_vento_kmh=_finite_number(_required(current, "wind_speed_10m")),
         codigo_meteorologico=condition.codigo_meteorologico,
         descricao=condition.descricao,
         icone=condition.icone,
@@ -232,9 +222,7 @@ def _transform_daily(
         ),
         "weather_code": _required_list(daily, "weather_code"),
     }
-    if any(
-        len(values) != EXPECTED_FORECAST_DAYS for values in fields.values()
-    ):
+    if any(len(values) != EXPECTED_FORECAST_DAYS for values in fields.values()):
         _invalid_structure()
 
     dates = tuple(_parse_date(value) for value in fields["time"])
@@ -249,12 +237,8 @@ def _transform_daily(
         forecast.append(
             PrevisaoDiariaOpenMeteo(
                 data=dates[index],
-                temperatura_max_c=_finite_number(
-                    fields["temperature_2m_max"][index]
-                ),
-                temperatura_min_c=_finite_number(
-                    fields["temperature_2m_min"][index]
-                ),
+                temperatura_max_c=_finite_number(fields["temperature_2m_max"][index]),
+                temperatura_min_c=_finite_number(fields["temperature_2m_min"][index]),
                 probabilidade_precipitacao_max_pct=_finite_number(
                     fields["precipitation_probability_max"][index]
                 ),

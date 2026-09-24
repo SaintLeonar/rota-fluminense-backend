@@ -76,9 +76,7 @@ def _daily_payload(
         "data": item.data,
         "temperatura_max_c": item.temperatura_max_c,
         "temperatura_min_c": item.temperatura_min_c,
-        "probabilidade_precipitacao_max_pct": (
-            item.probabilidade_precipitacao_max_pct
-        ),
+        "probabilidade_precipitacao_max_pct": (item.probabilidade_precipitacao_max_pct),
         "codigo_meteorologico": item.codigo_meteorologico,
         "descricao": item.descricao,
         "icone": item.icone,

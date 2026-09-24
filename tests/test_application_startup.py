@@ -13,6 +13,7 @@ class ApplicationStartupTestCase(unittest.TestCase):
         """Executa código em subprocesso com banco isolado."""
         environment = os.environ.copy()
         environment["DATABASE_URL"] = database_url
+        environment["CORS_ALLOWED_ORIGINS"] = "http://localhost:5173"
         environment["PYTHONUTF8"] = "1"
 
         return subprocess.run(

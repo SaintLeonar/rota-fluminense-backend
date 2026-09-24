@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 from app import app  # noqa: E402
 from models.base import Base  # noqa: E402
@@ -199,9 +200,7 @@ class LocalCreationTestCase(unittest.TestCase):
 
     def test_duplicate_slug_returns_conflict_and_preserves_first_record(self):
         first = self.post(build_local_body())
-        duplicate = self.post(
-            build_local_body(nome="Outro museu com o mesmo slug")
-        )
+        duplicate = self.post(build_local_body(nome="Outro museu com o mesmo slug"))
 
         self.assertEqual(first.status_code, 201)
         self.assertEqual(duplicate.status_code, 409)
@@ -217,9 +216,7 @@ class LocalCreationTestCase(unittest.TestCase):
         response = app.test_client().get("/openapi/openapi.json")
 
         self.assertEqual(response.status_code, 200)
-        responses = response.get_json()["paths"]["/locais"]["post"][
-            "responses"
-        ]
+        responses = response.get_json()["paths"]["/locais"]["post"]["responses"]
         self.assertTrue({"201", "400", "409", "500"}.issubset(responses))
 
 

@@ -6,6 +6,7 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 from app import app  # noqa: E402
 from models.base import Base  # noqa: E402
@@ -106,9 +107,7 @@ class LocalDetailTestCase(unittest.TestCase):
 
     def test_get_route_exposes_slug_and_not_the_legacy_id_parameter(self):
         get_rules = {
-            rule.rule
-            for rule in app.url_map.iter_rules()
-            if "GET" in rule.methods
+            rule.rule for rule in app.url_map.iter_rules() if "GET" in rule.methods
         }
 
         self.assertIn("/locais/<slug>", get_rules)

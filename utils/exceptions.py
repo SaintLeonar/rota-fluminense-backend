@@ -34,9 +34,7 @@ class ClimaIndisponivelError(AppError):
     def __init__(self, motivo: str) -> None:
         """Inicializa o erro público com uma classificação interna segura."""
         if motivo not in self._MOTIVOS_PERMITIDOS:
-            raise ValueError(
-                "O motivo da indisponibilidade climática é inválido."
-            )
+            raise ValueError("O motivo da indisponibilidade climática é inválido.")
         self.motivo = motivo
         super().__init__(
             "clima_indisponivel",

@@ -1,10 +1,10 @@
 from flask import redirect
-from flask_cors import CORS
 from flask_openapi3 import Info, OpenAPI, Tag
 
 from routes.avaliacao_routes import avaliacao_bp
 from routes.local_routes import local_bp
 from schemas.error import ErrorSchema
+from services.cors_config import configure_cors, load_cors_settings
 from services.open_meteo_cache import OPEN_METEO_CACHE
 from services.open_meteo_client import OPEN_METEO_CLIENT
 from services.open_meteo_config import OPEN_METEO_SETTINGS
@@ -29,6 +29,8 @@ app = OpenAPI(
     validation_error_model=ErrorSchema,
     validation_error_callback=error_handlers.tratar_erro_validacao,
 )
+CORS_SETTINGS = load_cors_settings()
+app.config["CORS_SETTINGS"] = CORS_SETTINGS
 app.config["OPEN_METEO_SETTINGS"] = OPEN_METEO_SETTINGS
 app.config["OPEN_METEO_CLIENT"] = OPEN_METEO_CLIENT
 app.config["OPEN_METEO_CACHE"] = OPEN_METEO_CACHE
@@ -37,7 +39,7 @@ error_handlers.registrar_manipuladores_erro(app)
 
 app.register_api(local_bp)
 app.register_api(avaliacao_bp)
-CORS(app)
+configure_cors(app, CORS_SETTINGS)
 
 home_tag = Tag(
     name="Documentação",

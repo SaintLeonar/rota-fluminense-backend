@@ -21,9 +21,7 @@ def gerar_slug(nome: str) -> str:
     """Gera um slug canônico e determinístico a partir do nome."""
     texto = unicodedata.normalize("NFKD", nome)
     texto = "".join(
-        caractere
-        for caractere in texto
-        if not unicodedata.combining(caractere)
+        caractere for caractere in texto if not unicodedata.combining(caractere)
     ).casefold()
     slug = re.sub(r"[^a-z0-9]+", "-", texto).strip("-")
     return validar_slug(slug)

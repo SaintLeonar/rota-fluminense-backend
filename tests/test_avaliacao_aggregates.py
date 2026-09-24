@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 from app import app  # noqa: E402
 from models.avaliacao import Avaliacao  # noqa: E402
@@ -77,9 +78,7 @@ class AvaliacaoAggregatesTestCase(unittest.TestCase):
     def evaluation_id(self, author):
         with self.session_factory() as session:
             return (
-                session.query(Avaliacao.id)
-                .filter(Avaliacao.autor == author)
-                .scalar()
+                session.query(Avaliacao.id).filter(Avaliacao.autor == author).scalar()
             )
 
     def test_creation_transitions_aggregates_from_zero_to_one(self):
@@ -140,9 +139,7 @@ class AvaliacaoAggregatesTestCase(unittest.TestCase):
         )
         detail = self.get_local("arpoador").get_json()
         listing = self.get_locations().get_json()["locais"]
-        listed = next(
-            local for local in listing if local["slug"] == "arpoador"
-        )
+        listed = next(local for local in listing if local["slug"] == "arpoador")
 
         self.assertEqual(created.status_code, 201)
         self.assertEqual(detail["nota_media"], 3.3)

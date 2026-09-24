@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 from app import app  # noqa: E402
 from models.avaliacao import Avaliacao  # noqa: E402
@@ -84,9 +85,7 @@ class AvaliacaoCreationTestCase(unittest.TestCase):
         self.assertEqual(payload["comentario"], "Excelente passeio.")
         self.assertTrue(payload["criado_em"].endswith("Z"))
 
-        created_at = datetime.fromisoformat(
-            payload["criado_em"].replace("Z", "+00:00")
-        )
+        created_at = datetime.fromisoformat(payload["criado_em"].replace("Z", "+00:00"))
         self.assertLessEqual(before, created_at)
         self.assertLessEqual(created_at, after)
 
@@ -224,9 +223,7 @@ class AvaliacaoCreationTestCase(unittest.TestCase):
 
         openapi = app.test_client().get("/openapi/openapi.json").get_json()
         operation = openapi["paths"]["/locais/{slug}/avaliacoes"]["post"]
-        self.assertTrue(
-            {"201", "400", "404", "500"}.issubset(operation["responses"])
-        )
+        self.assertTrue({"201", "400", "404", "500"}.issubset(operation["responses"]))
         self.assertEqual(operation["parameters"][0]["name"], "slug")
 
 

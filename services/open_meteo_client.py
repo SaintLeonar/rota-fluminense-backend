@@ -96,11 +96,7 @@ class OpenMeteoClient:
         resultado: str,
         duracao_ms: float,
     ) -> None:
-        log = (
-            self._logger.info
-            if resultado == "sucesso"
-            else self._logger.warning
-        )
+        log = self._logger.info if resultado == "sucesso" else self._logger.warning
         log(
             "Consulta Open-Meteo requisicao_id=%s origem=provedor "
             "resultado=%s duracao_ms=%.3f",
@@ -135,10 +131,8 @@ class OpenMeteoClient:
                     "timeformat": "iso8601",
                 },
             )
-            transformed = (
-                open_meteo_transformer.transformar_resposta_open_meteo(
-                    response
-                )
+            transformed = open_meteo_transformer.transformar_resposta_open_meteo(
+                response
             )
             resultado = "sucesso"
             return transformed

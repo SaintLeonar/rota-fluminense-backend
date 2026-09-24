@@ -11,9 +11,7 @@ from schemas.validacao import InteiroPositivo, Nota, Slug, Texto120, Texto1000
 class AvaliacaoInputSchema(BaseModel):
     model_config = pydantic.ConfigDict(
         extra="forbid",
-        json_schema_extra={
-            "example": openapi_examples.EVALUATION_INPUT_EXAMPLE
-        },
+        json_schema_extra={"example": openapi_examples.EVALUATION_INPUT_EXAMPLE},
     )
 
     autor: Texto120 = Field(
@@ -34,9 +32,7 @@ class AvaliacaoInputSchema(BaseModel):
 class AvaliacaoUpdateSchema(BaseModel):
     model_config = pydantic.ConfigDict(
         extra="forbid",
-        json_schema_extra={
-            "example": openapi_examples.EVALUATION_UPDATE_EXAMPLE
-        },
+        json_schema_extra={"example": openapi_examples.EVALUATION_UPDATE_EXAMPLE},
     )
 
     autor: Optional[Texto120] = Field(
@@ -51,9 +47,7 @@ class AvaliacaoUpdateSchema(BaseModel):
     )
     comentario: Optional[Texto1000] = Field(
         default=None,
-        description=(
-            "Novo comentário; null remove explicitamente o comentário atual."
-        ),
+        description=("Novo comentário; null remove explicitamente o comentário atual."),
         examples=["Vista bonita e ambiente agradável."],
     )
 
@@ -76,9 +70,7 @@ class AvaliacaoUpdateSchema(BaseModel):
 class AvaliacaoSchema(BaseModel):
     model_config = pydantic.ConfigDict(
         extra="forbid",
-        json_schema_extra={
-            "example": openapi_examples.EVALUATION_RESPONSE_EXAMPLE
-        },
+        json_schema_extra={"example": openapi_examples.EVALUATION_RESPONSE_EXAMPLE},
         openapi_extra={
             "description": "Representação canônica de uma avaliação.",
             "example": openapi_examples.EVALUATION_RESPONSE_EXAMPLE,
@@ -125,9 +117,7 @@ class AvaliacaoLocalPathSchema(BaseModel):
 class AvaliacaoListSchema(BaseModel):
     model_config = pydantic.ConfigDict(
         extra="forbid",
-        json_schema_extra={
-            "example": openapi_examples.EVALUATION_LIST_EXAMPLE
-        },
+        json_schema_extra={"example": openapi_examples.EVALUATION_LIST_EXAMPLE},
         openapi_extra={
             "description": "Coleção ordenada de avaliações do local.",
             "example": openapi_examples.EVALUATION_LIST_EXAMPLE,
@@ -135,7 +125,5 @@ class AvaliacaoListSchema(BaseModel):
     )
 
     avaliacoes: list[AvaliacaoSchema] = Field(
-        description=(
-            "Avaliações em ordem decrescente de criação e identificador."
-        )
+        description=("Avaliações em ordem decrescente de criação e identificador.")
     )

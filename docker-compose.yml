@@ -1,3 +1,6 @@
+name: rota-fluminense
+
+
 services:
   frontend:
     image: rota-fluminense-frontend:local

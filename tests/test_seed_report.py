@@ -9,6 +9,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 from scripts import seed  # noqa: E402
 
@@ -50,9 +51,7 @@ class SeedReportTestCase(unittest.TestCase):
             )
 
     def test_rejection_counts_must_match_manifest_summary(self):
-        manifest = json.loads(
-            seed.DEFAULT_MANIFEST_PATH.read_text(encoding="utf-8")
-        )
+        manifest = json.loads(seed.DEFAULT_MANIFEST_PATH.read_text(encoding="utf-8"))
         manifest["resumo"]["locais_sqlite_rejeitados"] = 2
 
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -104,17 +103,15 @@ class SeedReportTestCase(unittest.TestCase):
         self.assertNotIn("identificacao", serialized)
         self.assertNotIn("DATABASE_URL", serialized)
         self.assertNotIn("mysql+pymysql", serialized)
-        self.assertTrue(
-            all(rejection["motivo"] for rejection in report["rejeicoes"])
-        )
+        self.assertTrue(all(rejection["motivo"] for rejection in report["rejeicoes"]))
 
     def test_main_prints_only_the_json_report(self):
         output = StringIO()
         result = self.build_result()
 
-        with patch(
-            "scripts.seed.run_seed", return_value=result
-        ), redirect_stdout(output):
+        with patch("scripts.seed.run_seed", return_value=result), redirect_stdout(
+            output
+        ):
             seed.main()
 
         self.assertEqual(

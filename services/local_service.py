@@ -40,9 +40,7 @@ def _erro_slug_existente() -> AppError:
 
 def _slug_em_uso(session, slug: str) -> bool:
     return (
-        session.query(LocalTuristico.id)
-        .filter(LocalTuristico.slug == slug)
-        .first()
+        session.query(LocalTuristico.id).filter(LocalTuristico.slug == slug).first()
         is not None
     )
 
@@ -136,9 +134,7 @@ def listar_locais(
         tuple: Locais da página, total de itens e total de páginas.
     """
     with gerenciar_sessao(SessionLocal) as session:
-        query, nota_media, total_avaliacoes = _consulta_locais_com_agregados(
-            session
-        )
+        query, nota_media, total_avaliacoes = _consulta_locais_com_agregados(session)
 
         if cidade is not None:
             query = query.filter(LocalTuristico.cidade == cidade)
@@ -157,9 +153,7 @@ def listar_locais(
             nota_media,
             total_avaliacoes,
         )
-        linhas = (
-            query.offset((pagina - 1) * por_pagina).limit(por_pagina).all()
-        )
+        linhas = query.offset((pagina - 1) * por_pagina).limit(por_pagina).all()
 
         resultado = [_mapear_local_com_agregados(linha) for linha in linhas]
         return resultado, total_itens, total_paginas

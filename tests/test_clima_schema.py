@@ -17,9 +17,7 @@ class ClimaSchemaTestCase(unittest.TestCase):
             clima_schema.ClimaResponseSchema.model_validate(payload)
 
     def test_complete_response_exposes_only_the_approved_contract(self):
-        response = clima_schema.ClimaResponseSchema.model_validate(
-            climate_payload()
-        )
+        response = clima_schema.ClimaResponseSchema.model_validate(climate_payload())
 
         self.assertEqual(
             set(response.model_dump()),
@@ -125,9 +123,7 @@ class ClimaSchemaTestCase(unittest.TestCase):
         for value in (-0.1, 100.1, math.nan, "10"):
             with self.subTest(probability=value):
                 payload = climate_payload()
-                payload["previsao"][0][
-                    "probabilidade_precipitacao_max_pct"
-                ] = value
+                payload["previsao"][0]["probabilidade_precipitacao_max_pct"] = value
                 self.assert_invalid(payload)
 
         for value in (0, 1, "false"):
@@ -159,9 +155,7 @@ class ClimaSchemaTestCase(unittest.TestCase):
     ):
         schema = clima_schema.ClimaResponseSchema.model_json_schema()
 
-        self.assertEqual(
-            schema["example"], openapi_examples.CLIMATE_RESPONSE_EXAMPLE
-        )
+        self.assertEqual(schema["example"], openapi_examples.CLIMATE_RESPONSE_EXAMPLE)
         self.assertIs(schema["additionalProperties"], False)
         self.assertEqual(set(schema["required"]), set(schema["properties"]))
         self.assertEqual(schema["properties"]["previsao"]["minItems"], 3)

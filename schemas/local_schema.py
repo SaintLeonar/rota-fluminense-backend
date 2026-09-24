@@ -100,12 +100,8 @@ class LocalSchema(BaseModel):
         examples=["arpoador"],
     )
     nome: validacao.Texto120 = Field(description="Nome público do local.")
-    categoria: validacao.Categoria = Field(
-        description="Categoria canônica do local."
-    )
-    descricao: validacao.Texto2000 = Field(
-        description="Descrição pública do local."
-    )
+    categoria: validacao.Categoria = Field(description="Categoria canônica do local.")
+    descricao: validacao.Texto2000 = Field(description="Descrição pública do local.")
     cidade: validacao.Cidade = Field(description="Município fluminense.")
     bairro: validacao.Texto120 = Field(description="Bairro do local.")
     regiao: validacao.Texto80 = Field(description="Região do local.")
@@ -115,12 +111,8 @@ class LocalSchema(BaseModel):
     destaque: StrictBool = Field(
         description="Indica participação na seleção de destaques."
     )
-    latitude: validacao.Latitude = Field(
-        description="Latitude em graus decimais."
-    )
-    longitude: validacao.Longitude = Field(
-        description="Longitude em graus decimais."
-    )
+    latitude: validacao.Latitude = Field(description="Latitude em graus decimais.")
+    longitude: validacao.Longitude = Field(description="Longitude em graus decimais.")
     nota_media: Optional[Annotated[float, Field(ge=1, le=5)]] = Field(
         description=(
             "Média derivada das avaliações, com uma casa decimal; nula "

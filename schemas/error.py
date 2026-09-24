@@ -58,9 +58,7 @@ class ErrorSchema(BaseModel):
 
 
 CLIMATE_SERVICE_UNAVAILABLE_RESPONSE = {
-    "description": (
-        "Persistência, coordenadas ou serviço climático indisponível."
-    ),
+    "description": ("Persistência, coordenadas ou serviço climático indisponível."),
     "content": {
         "application/json": {
             "schema": {"$ref": "#/components/schemas/ErrorSchema"},

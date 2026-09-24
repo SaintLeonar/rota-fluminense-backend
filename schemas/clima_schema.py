@@ -71,15 +71,11 @@ class ClimaAtualSchema(BaseModel):
 
     model_config = pydantic.ConfigDict(
         extra="forbid",
-        json_schema_extra={
-            "example": openapi_examples.CLIMATE_CURRENT_EXAMPLE
-        },
+        json_schema_extra={"example": openapi_examples.CLIMATE_CURRENT_EXAMPLE},
     )
 
     observado_em: datetime = Field(
-        description=(
-            "Instante observado em ISO 8601 com offset de America/Sao_Paulo."
-        ),
+        description=("Instante observado em ISO 8601 com offset de America/Sao_Paulo."),
         examples=["2026-09-09T17:15:00-03:00"],
     )
     temperatura_c: NumeroFinito = Field(
@@ -114,9 +110,7 @@ class ClimaAtualSchema(BaseModel):
         """Exige offset coerente com America/Sao_Paulo no instante."""
         if valor.tzinfo is None or valor.utcoffset() is None:
             raise ValueError("O instante observado deve possuir timezone.")
-        offset_esperado = valor.astimezone(
-            ZoneInfo(OPEN_METEO_TIMEZONE)
-        ).utcoffset()
+        offset_esperado = valor.astimezone(ZoneInfo(OPEN_METEO_TIMEZONE)).utcoffset()
         if valor.utcoffset() != offset_esperado:
             raise ValueError(
                 "O instante observado deve usar o offset de America/Sao_Paulo."
@@ -129,9 +123,7 @@ class ClimaPrevisaoDiariaSchema(BaseModel):
 
     model_config = pydantic.ConfigDict(
         extra="forbid",
-        json_schema_extra={
-            "example": openapi_examples.CLIMATE_DAILY_EXAMPLES[0]
-        },
+        json_schema_extra={"example": openapi_examples.CLIMATE_DAILY_EXAMPLES[0]},
     )
 
     data: date = Field(
@@ -193,9 +185,7 @@ class ClimaResponseSchema(BaseModel):
 
     model_config = pydantic.ConfigDict(
         extra="forbid",
-        json_schema_extra={
-            "example": openapi_examples.CLIMATE_RESPONSE_EXAMPLE
-        },
+        json_schema_extra={"example": openapi_examples.CLIMATE_RESPONSE_EXAMPLE},
         openapi_extra={
             "description": "Condições atuais e previsão de três dias.",
             "examples": openapi_examples.CLIMATE_RESPONSE_EXAMPLES,
@@ -209,9 +199,7 @@ class ClimaResponseSchema(BaseModel):
         description="Timezone fixo usado na consulta meteorológica.",
         examples=[OPEN_METEO_TIMEZONE],
     )
-    atual: ClimaAtualSchema = Field(
-        description="Condições meteorológicas observadas."
-    )
+    atual: ClimaAtualSchema = Field(description="Condições meteorológicas observadas.")
     previsao: Annotated[
         tuple[ClimaPrevisaoDiariaSchema, ...],
         Field(min_length=3, max_length=3),
@@ -233,9 +221,7 @@ class ClimaResponseSchema(BaseModel):
         """Exige datas únicas e estritamente crescentes."""
         datas = tuple(item.data for item in valor)
         if datas != tuple(sorted(datas)) or len(set(datas)) != len(datas):
-            raise ValueError(
-                "A previsão deve possuir datas únicas e crescentes."
-            )
+            raise ValueError("A previsão deve possuir datas únicas e crescentes.")
         return valor
 
     @pydantic.field_validator("atualizado_em")
@@ -248,7 +234,5 @@ class ClimaResponseSchema(BaseModel):
     def validar_intervalo_cache(self):
         """Exige expiração posterior ao instante de atualização."""
         if self.cache.expira_em <= self.atualizado_em:
-            raise ValueError(
-                "A expiração do cache deve ser posterior à atualização."
-            )
+            raise ValueError("A expiração do cache deve ser posterior à atualização.")
         return self

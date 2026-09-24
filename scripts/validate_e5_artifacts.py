@@ -159,9 +159,7 @@ def _project_files(pattern):
     return sorted(
         path
         for path in ROOT.rglob(pattern)
-        if not any(
-            part in {".git", ".venv", "__pycache__"} for part in path.parts
-        )
+        if not any(part in {".git", ".venv", "__pycache__"} for part in path.parts)
     )
 
 
@@ -228,9 +226,7 @@ def _validate_markdown_links():
                 continue
 
             if not destination.exists():
-                failures.append(
-                    f"{source.relative_to(ROOT)} -> {target} (inexistente)"
-                )
+                failures.append(f"{source.relative_to(ROOT)} -> {target} (inexistente)")
                 continue
 
             if parsed.fragment and destination.suffix.casefold() == ".md":
@@ -297,13 +293,8 @@ def _validate_openapi_contract():
     from app import app
 
     response = app.test_client().get("/openapi/openapi.json")
-    if (
-        response.status_code != 200
-        or response.content_type != "application/json"
-    ):
-        raise ArtifactValidationError(
-            "O documento OpenAPI não respondeu JSON 200."
-        )
+    if response.status_code != 200 or response.content_type != "application/json":
+        raise ArtifactValidationError("O documento OpenAPI não respondeu JSON 200.")
 
     specification = response.get_json()
     operations = _openapi_operations(specification)
@@ -371,9 +362,7 @@ def _validate_openapi_contract():
     for schema, expected_fields in EXPECTED_SCHEMA_FIELDS.items():
         actual_fields = set(schemas[schema]["properties"])
         if actual_fields != expected_fields:
-            raise ArtifactValidationError(
-                f"Campos divergentes no schema {schema}."
-            )
+            raise ArtifactValidationError(f"Campos divergentes no schema {schema}.")
 
     for operation in operations.values():
         for status, response_definition in operation["responses"].items():

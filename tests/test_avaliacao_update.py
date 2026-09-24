@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 from app import app  # noqa: E402
 from models.avaliacao import Avaliacao  # noqa: E402
@@ -45,9 +46,7 @@ class AvaliacaoUpdateTestCase(unittest.TestCase):
     def evaluation_snapshot(self, author="Marina Costa"):
         with self.session_factory() as session:
             evaluation = (
-                session.query(Avaliacao)
-                .filter(Avaliacao.autor == author)
-                .one()
+                session.query(Avaliacao).filter(Avaliacao.autor == author).one()
             )
             return {
                 "id": evaluation.id,
@@ -222,9 +221,7 @@ class AvaliacaoUpdateTestCase(unittest.TestCase):
 
     def test_patch_route_and_openapi_expose_the_canonical_contract(self):
         patch_rules = {
-            rule.rule
-            for rule in app.url_map.iter_rules()
-            if "PATCH" in rule.methods
+            rule.rule for rule in app.url_map.iter_rules() if "PATCH" in rule.methods
         }
         self.assertEqual(
             patch_rules,
@@ -233,9 +230,7 @@ class AvaliacaoUpdateTestCase(unittest.TestCase):
 
         openapi = app.test_client().get("/openapi/openapi.json").get_json()
         operation = openapi["paths"]["/avaliacoes/{avaliacao_id}"]["patch"]
-        self.assertTrue(
-            {"200", "400", "404", "500"}.issubset(operation["responses"])
-        )
+        self.assertTrue({"200", "400", "404", "500"}.issubset(operation["responses"]))
         self.assertEqual(
             operation["parameters"][0]["name"],
             "avaliacao_id",

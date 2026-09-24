@@ -13,6 +13,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 from models.avaliacao import Avaliacao  # noqa: E402,F401
 from models.base import Base  # noqa: E402
@@ -168,9 +169,7 @@ class OpenMeteoServiceTestCase(unittest.TestCase):
             logger=self.logger,
         )
 
-        with patch.object(
-            session, "close", side_effect=close_session
-        ) as close:
+        with patch.object(session, "close", side_effect=close_session) as close:
             service.consultar_clima("arpoador")
 
         close.assert_called_once_with()

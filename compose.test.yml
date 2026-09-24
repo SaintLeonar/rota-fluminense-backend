@@ -30,6 +30,62 @@ services:
     networks:
       - test_backend
 
+  backend-test:
+    image: rota-fluminense-backend-test:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: "no"
+    environment:
+      APP_ENV: test
+      DATABASE_URL: mysql+pymysql://${TEST_MYSQL_USER:-usuario_teste}:${TEST_MYSQL_PASSWORD:-senha_teste_local}@mysql:3306/${TEST_MYSQL_DATABASE:-rota_fluminense_test}
+      CORS_ALLOWED_ORIGINS: http://localhost:5173
+      OPEN_METEO_TIMEOUT_SECONDS: 5
+      OPEN_METEO_CACHE_TTL_SECONDS: 1800
+      TEST_SIMULATE_VALIDATION_FAILURE: ${TEST_SIMULATE_VALIDATION_FAILURE:-0}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    entrypoint:
+      - /bin/sh
+      - -ec
+    command:
+      - |
+        python -m alembic upgrade head
+        python -m scripts.seed
+        if [ "$${TEST_SIMULATE_VALIDATION_FAILURE}" = "1" ]; then
+          echo "Falha controlada solicitada após migração e seed."
+          exit 97
+        fi
+        python -m scripts.validate_mysql_e4
+    volumes:
+      - type: bind
+        source: ./scripts/validate_mysql_e4.py
+        target: /app/scripts/validate_mysql_e4.py
+        read_only: true
+      - type: bind
+        source: ./scripts/mysql_integration_suite.py
+        target: /app/scripts/mysql_integration_suite.py
+        read_only: true
+      - type: bind
+        source: ./scripts/mysql_local_validation.py
+        target: /app/scripts/mysql_local_validation.py
+        read_only: true
+      - type: bind
+        source: ./scripts/mysql_listing_validation.py
+        target: /app/scripts/mysql_listing_validation.py
+        read_only: true
+      - type: bind
+        source: ./scripts/mysql_evaluation_validation.py
+        target: /app/scripts/mysql_evaluation_validation.py
+        read_only: true
+      - type: bind
+        source: ./scripts/mysql_climate_validation.py
+        target: /app/scripts/mysql_climate_validation.py
+        read_only: true
+    networks:
+      - test_backend
+
 networks:
   test_backend:
     internal: true

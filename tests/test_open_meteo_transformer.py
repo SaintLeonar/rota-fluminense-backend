@@ -10,9 +10,7 @@ from services import open_meteo_transformer
 EXPECTED_FORECAST_DAYS = open_meteo_transformer.EXPECTED_FORECAST_DAYS
 MAX_RESPONSE_BYTES = open_meteo_transformer.MAX_RESPONSE_BYTES
 OpenMeteoResponseError = open_meteo_transformer.OpenMeteoResponseError
-transformar_resposta_open_meteo = (
-    open_meteo_transformer.transformar_resposta_open_meteo
-)
+transformar_resposta_open_meteo = open_meteo_transformer.transformar_resposta_open_meteo
 MISSING = object()
 
 

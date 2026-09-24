@@ -6,6 +6,7 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 from app import app  # noqa: E402
 from models.base import Base  # noqa: E402
@@ -25,9 +26,7 @@ class LocalPaginationOrderingTestCase(unittest.TestCase):
         with self.session_factory.begin() as session:
             seed_locations(session, load_local_seed_data())
             seed_evaluations(session, load_evaluation_seed_data())
-            session.query(LocalTuristico).filter(
-                LocalTuristico.id.in_((2, 4))
-            ).update(
+            session.query(LocalTuristico).filter(LocalTuristico.id.in_((2, 4))).update(
                 {LocalTuristico.destaque: False},
                 synchronize_session=False,
             )
@@ -146,16 +145,12 @@ class LocalPaginationOrderingTestCase(unittest.TestCase):
 
     def test_identifier_is_the_tiebreaker_for_equal_names(self):
         with self.session_factory.begin() as session:
-            session.query(LocalTuristico).filter(
-                LocalTuristico.id.in_((1, 5))
-            ).update(
+            session.query(LocalTuristico).filter(LocalTuristico.id.in_((1, 5))).update(
                 {LocalTuristico.nome: "Mesmo nome"},
                 synchronize_session=False,
             )
 
-        response = self.get(
-            {"categoria": "praias", "ordenar_por": "nome_desc"}
-        )
+        response = self.get({"categoria": "praias", "ordenar_por": "nome_desc"})
 
         self.assertEqual(
             [local["id"] for local in response.get_json()["locais"]],

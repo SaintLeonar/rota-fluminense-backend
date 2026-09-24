@@ -111,9 +111,7 @@ class SchemaValidationTestCase(unittest.TestCase):
         ):
             with self.subTest(image=image):
                 with self.assertRaises(ValidationError) as context:
-                    local_schema.LocalInputSchema(
-                        **build_local_fields(imagem=image)
-                    )
+                    local_schema.LocalInputSchema(**build_local_fields(imagem=image))
                 self.assert_field_error(context, "imagem")
 
     def test_coordinates_and_featured_require_json_domain_types(self):

@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 from app import app  # noqa: E402
 from models.base import Base  # noqa: E402
@@ -170,18 +171,14 @@ class LocalUpdateTestCase(unittest.TestCase):
 
     def test_put_route_and_openapi_use_slug_without_legacy_id(self):
         put_rules = {
-            rule.rule
-            for rule in app.url_map.iter_rules()
-            if "PUT" in rule.methods
+            rule.rule for rule in app.url_map.iter_rules() if "PUT" in rule.methods
         }
         self.assertIn("/locais/<slug>", put_rules)
         self.assertNotIn("/locais/<int:local_id>", put_rules)
 
         openapi = app.test_client().get("/openapi/openapi.json").get_json()
         operation = openapi["paths"]["/locais/{slug}"]["put"]
-        self.assertTrue(
-            {"200", "400", "404", "500"}.issubset(operation["responses"])
-        )
+        self.assertTrue({"200", "400", "404", "500"}.issubset(operation["responses"]))
 
 
 if __name__ == "__main__":

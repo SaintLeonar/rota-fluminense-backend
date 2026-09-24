@@ -145,13 +145,10 @@ def _require_mapping(value: Any, field: str) -> Mapping[str, Any]:
 def _require_text(data: Mapping[str, Any], field: str) -> str:
     value = data.get(field)
     if not isinstance(value, str) or not value.strip():
-        raise SeedManifestError(
-            f"O campo {field} deve ser um texto não vazio."
-        )
+        raise SeedManifestError(f"O campo {field} deve ser um texto não vazio.")
     if len(value) > TEXT_LIMITS[field]:
         raise SeedManifestError(
-            f"O campo {field} excede o limite de "
-            f"{TEXT_LIMITS[field]} caracteres."
+            f"O campo {field} excede o limite de " f"{TEXT_LIMITS[field]} caracteres."
         )
     return value
 
@@ -163,9 +160,7 @@ def _require_coordinate(data: Mapping[str, Any], field: str) -> Decimal:
     try:
         coordinate = Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
-        raise SeedManifestError(
-            f"O campo {field} deve ser numérico."
-        ) from None
+        raise SeedManifestError(f"O campo {field} deve ser numérico.") from None
 
     minimum, maximum = (-90, 90) if field == "latitude" else (-180, 180)
     if not Decimal(minimum) <= coordinate <= Decimal(maximum):
@@ -176,9 +171,7 @@ def _require_coordinate(data: Mapping[str, Any], field: str) -> Decimal:
 
 
 def _build_category_map(rules: Mapping[str, Any]) -> dict[str, str]:
-    categories = _require_mapping(
-        rules.get("categorias"), "regras.locais.categorias"
-    )
+    categories = _require_mapping(rules.get("categorias"), "regras.locais.categorias")
     category_map: dict[str, str] = {}
     for source, canonical in categories.items():
         if not isinstance(source, str) or not isinstance(canonical, str):
@@ -222,9 +215,7 @@ def _require_utc_datetime(data: Mapping[str, Any]) -> datetime:
         ) from None
     offset = created_at.utcoffset()
     if offset is None or offset.total_seconds() != 0:
-        raise SeedManifestError(
-            "O campo criado_em da avaliação deve representar UTC."
-        )
+        raise SeedManifestError("O campo criado_em da avaliação deve representar UTC.")
     normalized = created_at.astimezone(timezone.utc)
     expected = normalized.isoformat(timespec="seconds").replace("+00:00", "Z")
     if value != expected:
@@ -259,9 +250,7 @@ def load_local_seed_data(
     rules = _require_mapping(root.get("regras"), "regras")
     local_rules = _require_mapping(rules.get("locais"), "regras.locais")
     if local_rules.get("chave_reconciliacao") != "slug":
-        raise SeedManifestError(
-            "A chave de reconciliação dos locais deve ser slug."
-        )
+        raise SeedManifestError("A chave de reconciliação dos locais deve ser slug.")
 
     category_map = _build_category_map(local_rules)
     curated_city = local_rules.get("cidade_padrao_curada")
@@ -271,9 +260,7 @@ def load_local_seed_data(
     sources = _require_mapping(root.get("fontes"), "fontes")
     coordinate_sources = sources.get("coordenadas")
     if not isinstance(coordinate_sources, list):
-        raise SeedManifestError(
-            "As fontes de coordenadas devem formar uma lista."
-        )
+        raise SeedManifestError("As fontes de coordenadas devem formar uma lista.")
     coordinate_source_ids = {
         source.get("id")
         for source in coordinate_sources
@@ -283,13 +270,10 @@ def load_local_seed_data(
     entries = root.get("locais")
     summary = _require_mapping(root.get("resumo"), "resumo")
     if not isinstance(entries, list) or len(entries) != 6:
-        raise SeedManifestError(
-            "O manifesto deve conter exatamente seis locais."
-        )
+        raise SeedManifestError("O manifesto deve conter exatamente seis locais.")
     if summary.get("locais_aprovados") != len(entries):
         raise SeedManifestError(
-            "A contagem de locais aprovados diverge dos registros "
-            "do manifesto."
+            "A contagem de locais aprovados diverge dos registros " "do manifesto."
         )
 
     records: list[LocalSeedData] = []
@@ -314,9 +298,7 @@ def load_local_seed_data(
                 "de coordenadas válida."
             )
 
-        data = _require_mapping(
-            entry_data.get("dados"), f"locais[{position}].dados"
-        )
+        data = _require_mapping(entry_data.get("dados"), f"locais[{position}].dados")
         if set(data) != LOCAL_FIELDS:
             raise SeedManifestError(
                 f"Os campos persistíveis do local na posição {position} "
@@ -326,16 +308,13 @@ def load_local_seed_data(
         texts = {field: _require_text(data, field) for field in TEXT_LIMITS}
         slug = texts["slug"]
         if slug in slugs:
-            raise SeedManifestError(
-                f"O slug {slug} está duplicado no manifesto."
-            )
+            raise SeedManifestError(f"O slug {slug} está duplicado no manifesto.")
         slugs.add(slug)
 
         category = category_map.get(texts["categoria"].casefold())
         if category is None:
             raise SeedManifestError(
-                f"A categoria {texts['categoria']} não possui "
-                "normalização definida."
+                f"A categoria {texts['categoria']} não possui " "normalização definida."
             )
         if texts["cidade"] != curated_city:
             raise SeedManifestError(
@@ -346,9 +325,7 @@ def load_local_seed_data(
                 f"A imagem do local {slug} não usa o caminho público canônico."
             )
         if type(data.get("destaque")) is not bool:
-            raise SeedManifestError(
-                f"O destaque do local {slug} deve ser booleano."
-            )
+            raise SeedManifestError(f"O destaque do local {slug} deve ser booleano.")
 
         records.append(
             LocalSeedData(
@@ -373,9 +350,7 @@ def load_evaluation_seed_data(
     manifest_path: Path = DEFAULT_MANIFEST_PATH,
 ) -> tuple[EvaluationSeedData, ...]:
     """Carrega e valida as seis avaliações aprovadas do manifesto."""
-    approved_slugs = {
-        record.slug for record in load_local_seed_data(manifest_path)
-    }
+    approved_slugs = {record.slug for record in load_local_seed_data(manifest_path)}
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
@@ -389,9 +364,7 @@ def load_evaluation_seed_data(
         rules.get("avaliacoes"),
         "regras.avaliacoes",
     )
-    if evaluation_rules.get("chave_reconciliacao") != list(
-        EVALUATION_KEY_FIELDS
-    ):
+    if evaluation_rules.get("chave_reconciliacao") != list(EVALUATION_KEY_FIELDS):
         raise SeedManifestError(
             "A chave de reconciliação das avaliações diverge do contrato."
         )
@@ -399,13 +372,10 @@ def load_evaluation_seed_data(
     entries = root.get("avaliacoes")
     summary = _require_mapping(root.get("resumo"), "resumo")
     if not isinstance(entries, list) or len(entries) != 6:
-        raise SeedManifestError(
-            "O manifesto deve conter exatamente seis avaliações."
-        )
+        raise SeedManifestError("O manifesto deve conter exatamente seis avaliações.")
     if summary.get("avaliacoes_aprovadas") != len(entries):
         raise SeedManifestError(
-            "A contagem de avaliações aprovadas diverge dos registros "
-            "do manifesto."
+            "A contagem de avaliações aprovadas diverge dos registros " "do manifesto."
         )
 
     records: list[EvaluationSeedData] = []
@@ -418,8 +388,7 @@ def load_evaluation_seed_data(
         )
         if origin.get("fonte") != "mock_avaliacoes":
             raise SeedManifestError(
-                f"A avaliação na posição {position} não possui "
-                "origem aprovada."
+                f"A avaliação na posição {position} não possui " "origem aprovada."
             )
 
         data = _require_mapping(
@@ -503,17 +472,14 @@ def load_seed_rejections(
 
     summary = _require_mapping(root.get("resumo"), "resumo")
     local_count = sum(rejection.tipo == "local" for rejection in rejections)
-    evaluation_count = sum(
-        rejection.tipo == "avaliacao" for rejection in rejections
-    )
+    evaluation_count = sum(rejection.tipo == "avaliacao" for rejection in rejections)
     if local_count != summary.get("locais_sqlite_rejeitados"):
         raise SeedManifestError(
             "A contagem de locais rejeitados diverge do resumo do manifesto."
         )
     if evaluation_count != summary.get("avaliacoes_sqlite_rejeitadas"):
         raise SeedManifestError(
-            "A contagem de avaliações rejeitadas diverge do resumo "
-            "do manifesto."
+            "A contagem de avaliações rejeitadas diverge do resumo " "do manifesto."
         )
     return tuple(rejections)
 
@@ -534,9 +500,7 @@ def seed_locations(
             inserted += 1
             continue
 
-        changed = any(
-            getattr(local, field) != value for field, value in values.items()
-        )
+        changed = any(getattr(local, field) != value for field, value in values.items())
         if not changed:
             unchanged += 1
             continue
@@ -571,9 +535,7 @@ def seed_evaluations(
             + "."
         )
 
-    slugs_by_local_id = {
-        local.id: local.slug for local in locations_by_slug.values()
-    }
+    slugs_by_local_id = {local.id: local.slug for local in locations_by_slug.values()}
     existing_evaluations = session.scalars(
         select(Avaliacao).where(Avaliacao.local_id.in_(slugs_by_local_id))
     ).all()
@@ -637,9 +599,7 @@ def run_seed(
 
 def build_seed_report(result: SeedResult) -> dict[str, Any]:
     """Monta um relatório sem identificadores ou configuração sensível."""
-    local_rejections = sum(
-        rejection.tipo == "local" for rejection in result.rejections
-    )
+    local_rejections = sum(rejection.tipo == "local" for rejection in result.rejections)
     evaluation_rejections = sum(
         rejection.tipo == "avaliacao" for rejection in result.rejections
     )
@@ -660,15 +620,9 @@ def build_seed_report(result: SeedResult) -> dict[str, Any]:
     return {
         "resultado": "concluido",
         "totais": {
-            "inseridos": sum(
-                entity["inseridos"] for entity in entities.values()
-            ),
-            "atualizados": sum(
-                entity["atualizados"] for entity in entities.values()
-            ),
-            "ignorados": sum(
-                entity["ignorados"] for entity in entities.values()
-            ),
+            "inseridos": sum(entity["inseridos"] for entity in entities.values()),
+            "atualizados": sum(entity["atualizados"] for entity in entities.values()),
+            "ignorados": sum(entity["ignorados"] for entity in entities.values()),
             "rejeitados": len(result.rejections),
         },
         "entidades": entities,

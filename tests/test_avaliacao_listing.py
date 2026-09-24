@@ -7,6 +7,7 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 from app import app  # noqa: E402
 from models.avaliacao import Avaliacao  # noqa: E402
@@ -171,9 +172,7 @@ class AvaliacaoListingTestCase(unittest.TestCase):
 
         openapi = app.test_client().get("/openapi/openapi.json").get_json()
         operation = openapi["paths"]["/locais/{slug}/avaliacoes"]["get"]
-        self.assertTrue(
-            {"200", "400", "404", "500"}.issubset(operation["responses"])
-        )
+        self.assertTrue({"200", "400", "404", "500"}.issubset(operation["responses"]))
 
 
 if __name__ == "__main__":

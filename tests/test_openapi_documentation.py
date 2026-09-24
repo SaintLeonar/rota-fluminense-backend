@@ -2,6 +2,7 @@ import os
 import unittest
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 HTTP_METHODS = {"get", "post", "put", "patch", "delete"}
 
@@ -260,26 +261,20 @@ class OpenAPIDocumentationTestCase(unittest.TestCase):
             ("DELETE", "/locais/{slug}"),
             ("DELETE", "/avaliacoes/{avaliacao_id}"),
         ):
-            self.assertNotIn(
-                "content", self.operations[key]["responses"]["204"]
-            )
+            self.assertNotIn("content", self.operations[key]["responses"]["204"])
 
     def test_climate_examples_are_reusable_valid_and_semantic(self):
         from schemas import clima_schema
         from schemas.error import ErrorSchema
 
         responses = self.operations[CLIMATE_OPERATION]["responses"]
-        success_examples = responses["200"]["content"]["application/json"][
-            "examples"
-        ]
+        success_examples = responses["200"]["content"]["application/json"]["examples"]
 
         for name, example in success_examples.items():
             with self.subTest(success_example=name):
                 self.assertTrue(example["summary"])
                 self.assertTrue(example["description"])
-                clima_schema.ClimaResponseSchema.model_validate(
-                    example["value"]
-                )
+                clima_schema.ClimaResponseSchema.model_validate(example["value"])
 
         provider = success_examples["provedor"]["value"]
         cached = success_examples["cacheValido"]["value"]
@@ -296,9 +291,7 @@ class OpenAPIDocumentationTestCase(unittest.TestCase):
             cached["cache"]["expira_em"],
         )
 
-        error_examples = responses["503"]["content"]["application/json"][
-            "examples"
-        ]
+        error_examples = responses["503"]["content"]["application/json"]["examples"]
         expected_codes = {
             "bancoIndisponivel": "banco_indisponivel",
             "coordenadasIndisponiveis": ("coordenadas_indisponiveis"),

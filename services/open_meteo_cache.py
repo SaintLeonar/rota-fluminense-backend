@@ -64,9 +64,7 @@ def _canonical_coordinate(value: Decimal | float | int) -> str:
             rounding=ROUND_HALF_EVEN,
         )
     except InvalidOperation:
-        raise ValueError(
-            "A coordenada do cache não pode ser normalizada."
-        ) from None
+        raise ValueError("A coordenada do cache não pode ser normalizada.") from None
     if canonical == 0:
         canonical = abs(canonical)
     return format(canonical, ".6f")
@@ -158,9 +156,7 @@ class CacheOpenMeteo:
         data: open_meteo_transformer.ResultadoOpenMeteo,
     ) -> ResultadoCacheOpenMeteo:
         if not isinstance(data, open_meteo_transformer.ResultadoOpenMeteo):
-            raise TypeError(
-                "O cache aceita somente resultado meteorológico validado."
-            )
+            raise TypeError("O cache aceita somente resultado meteorológico validado.")
 
         updated_at = self._utc_clock()
         if updated_at.tzinfo is None or updated_at.utcoffset() is None:

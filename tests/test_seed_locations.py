@@ -10,6 +10,7 @@ from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import sessionmaker
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 from models.avaliacao import Avaliacao  # noqa: E402, F401
 from models.base import Base  # noqa: E402
@@ -45,26 +46,17 @@ class SeedLocationsTestCase(unittest.TestCase):
             {record.categoria for record in records},
             {"praias", "parques", "museus", "mirantes"},
         )
+        self.assertTrue(all(record.cidade == "Rio de Janeiro" for record in records))
         self.assertTrue(
-            all(record.cidade == "Rio de Janeiro" for record in records)
+            all(record.imagem.startswith("/imagens/locais/") for record in records)
         )
-        self.assertTrue(
-            all(
-                record.imagem.startswith("/imagens/locais/")
-                for record in records
-            )
-        )
-        self.assertTrue(
-            all(isinstance(record.latitude, Decimal) for record in records)
-        )
+        self.assertTrue(all(isinstance(record.latitude, Decimal) for record in records))
         self.assertTrue(
             all(isinstance(record.longitude, Decimal) for record in records)
         )
 
     def test_category_is_normalized_from_manifest_rule(self):
-        manifest = json.loads(
-            seed.DEFAULT_MANIFEST_PATH.read_text(encoding="utf-8")
-        )
+        manifest = json.loads(seed.DEFAULT_MANIFEST_PATH.read_text(encoding="utf-8"))
         manifest["locais"][0]["dados"]["categoria"] = "Praias"
 
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -78,9 +70,7 @@ class SeedLocationsTestCase(unittest.TestCase):
         self.assertEqual(records[0].categoria, "praias")
 
     def test_invalid_manifest_is_rejected_before_persistence(self):
-        manifest = json.loads(
-            seed.DEFAULT_MANIFEST_PATH.read_text(encoding="utf-8")
-        )
+        manifest = json.loads(seed.DEFAULT_MANIFEST_PATH.read_text(encoding="utf-8"))
         manifest["locais"][1]["dados"]["slug"] = "arpoador"
 
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -106,9 +96,7 @@ class SeedLocationsTestCase(unittest.TestCase):
 
     def test_seed_reconciles_existing_location_by_slug(self):
         records = seed.load_local_seed_data()
-        arpoador = next(
-            record for record in records if record.slug == "arpoador"
-        )
+        arpoador = next(record for record in records if record.slug == "arpoador")
         outdated = LocalTuristico(
             slug=arpoador.slug,
             nome="Nome desatualizado",
@@ -134,9 +122,7 @@ class SeedLocationsTestCase(unittest.TestCase):
             persisted = session.scalar(
                 select(LocalTuristico).where(LocalTuristico.slug == "arpoador")
             )
-            count = session.scalar(
-                select(func.count()).select_from(LocalTuristico)
-            )
+            count = session.scalar(select(func.count()).select_from(LocalTuristico))
 
         self.assertEqual(result.inserted, 5)
         self.assertEqual(result.updated, 1)

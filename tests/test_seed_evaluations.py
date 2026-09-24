@@ -11,6 +11,7 @@ from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import sessionmaker
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 from models.avaliacao import Avaliacao  # noqa: E402
 from models.base import Base  # noqa: E402
@@ -49,9 +50,7 @@ class SeedEvaluationsTestCase(unittest.TestCase):
 
     def read_manifest(self):
         """Lê o manifesto oficial para testes de validação."""
-        return json.loads(
-            seed.DEFAULT_MANIFEST_PATH.read_text(encoding="utf-8")
-        )
+        return json.loads(seed.DEFAULT_MANIFEST_PATH.read_text(encoding="utf-8"))
 
     def test_manifest_loads_six_evaluations_with_deterministic_keys(self):
         records = seed.load_evaluation_seed_data()
@@ -78,9 +77,7 @@ class SeedEvaluationsTestCase(unittest.TestCase):
 
     def test_manifest_rejects_duplicate_evaluation_key(self):
         manifest = self.read_manifest()
-        manifest["avaliacoes"][1]["dados"] = dict(
-            manifest["avaliacoes"][0]["dados"]
-        )
+        manifest["avaliacoes"][1]["dados"] = dict(manifest["avaliacoes"][0]["dados"])
 
         with self.assertRaisesRegex(seed.SeedManifestError, "duplicada"):
             seed.load_evaluation_seed_data(self.write_manifest(manifest))

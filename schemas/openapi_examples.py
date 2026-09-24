@@ -138,9 +138,7 @@ CLIMATE_RESPONSE_EXAMPLES = {
     },
     "cacheValido": {
         "summary": "Resposta reutilizada do cache",
-        "description": (
-            "Uma entrada ainda válida evitou nova chamada ao Open-Meteo."
-        ),
+        "description": ("Uma entrada ainda válida evitou nova chamada ao Open-Meteo."),
         "value": CLIMATE_CACHE_RESPONSE_EXAMPLE,
     },
 }
@@ -158,9 +156,7 @@ ERROR_EXAMPLES = {
                     {
                         "campo": "pagina",
                         "codigo": "fora_do_limite",
-                        "mensagem": (
-                            "O valor está fora dos limites permitidos."
-                        ),
+                        "mensagem": ("O valor está fora dos limites permitidos."),
                     }
                 ],
                 "requisicao_id": ERROR_REQUEST_ID,
@@ -200,9 +196,7 @@ ERROR_EXAMPLES = {
         "value": {
             "erro": {
                 "codigo": "banco_indisponivel",
-                "mensagem": (
-                    "O banco de dados está temporariamente indisponível."
-                ),
+                "mensagem": ("O banco de dados está temporariamente indisponível."),
                 "detalhes": [],
                 "requisicao_id": ERROR_REQUEST_ID,
             }
@@ -241,9 +235,7 @@ CLIMATE_UNAVAILABLE_ERROR_EXAMPLE = {
     "value": {
         "erro": {
             "codigo": "clima_indisponivel",
-            "mensagem": (
-                "O serviço de clima está temporariamente indisponível."
-            ),
+            "mensagem": ("O serviço de clima está temporariamente indisponível."),
             "detalhes": [],
             "requisicao_id": ERROR_REQUEST_ID,
         }

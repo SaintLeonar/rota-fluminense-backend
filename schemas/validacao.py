@@ -13,15 +13,11 @@ from utils.slug import SLUG_MAX_LENGTH, SLUG_PATTERN
 def _chave_normalizada(valor: str) -> str:
     texto = unicodedata.normalize("NFKD", valor)
     return "".join(
-        caractere
-        for caractere in texto
-        if not unicodedata.combining(caractere)
+        caractere for caractere in texto if not unicodedata.combining(caractere)
     ).casefold()
 
 
-_CIDADES_POR_CHAVE = {
-    _chave_normalizada(cidade): cidade for cidade in CIDADES_RJ
-}
+_CIDADES_POR_CHAVE = {_chave_normalizada(cidade): cidade for cidade in CIDADES_RJ}
 
 
 def normalizar_categoria(valor: str) -> str:

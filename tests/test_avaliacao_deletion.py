@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 from app import app  # noqa: E402
 from models.avaliacao import Avaliacao  # noqa: E402
@@ -130,8 +131,7 @@ class AvaliacaoDeletionTestCase(unittest.TestCase):
         delete_rules = {
             rule.rule
             for rule in app.url_map.iter_rules()
-            if "DELETE" in rule.methods
-            and rule.rule.startswith("/avaliacoes/")
+            if "DELETE" in rule.methods and rule.rule.startswith("/avaliacoes/")
         }
         self.assertEqual(
             delete_rules,
@@ -140,9 +140,7 @@ class AvaliacaoDeletionTestCase(unittest.TestCase):
 
         openapi = app.test_client().get("/openapi/openapi.json").get_json()
         operation = openapi["paths"]["/avaliacoes/{avaliacao_id}"]["delete"]
-        self.assertTrue(
-            {"204", "400", "404", "500"}.issubset(operation["responses"])
-        )
+        self.assertTrue({"204", "400", "404", "500"}.issubset(operation["responses"]))
         self.assertEqual(
             operation["parameters"][0]["name"],
             "avaliacao_id",

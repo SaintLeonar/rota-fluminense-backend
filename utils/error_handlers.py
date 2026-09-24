@@ -151,8 +151,7 @@ def registrar_manipuladores_erro(app: Flask) -> None:
         requisicao_id = obter_requisicao_id()
         resposta.headers[REQUEST_ID_HEADER] = requisicao_id
         current_app.logger.info(
-            "Requisição concluída requisicao_id=%s método=%s caminho=%s "
-            "status=%s",
+            "Requisição concluída requisicao_id=%s método=%s caminho=%s " "status=%s",
             requisicao_id,
             request.method,
             request.path,

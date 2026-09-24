@@ -54,9 +54,7 @@ def serializar_local(
         "latitude": float(_obter_campo(local, "latitude")),
         "longitude": float(_obter_campo(local, "longitude")),
         "nota_media": None if nota_media is None else float(nota_media),
-        "total_avaliacoes": int(
-            _obter_campo_opcional(local, "total_avaliacoes", 0)
-        ),
+        "total_avaliacoes": int(_obter_campo_opcional(local, "total_avaliacoes", 0)),
     }
 
 
@@ -90,9 +88,7 @@ def serializar_avaliacao(
         "autor": _obter_campo(avaliacao, "autor"),
         "nota": _obter_campo(avaliacao, "nota"),
         "comentario": _obter_campo(avaliacao, "comentario"),
-        "criado_em": _serializar_instante_utc(
-            _obter_campo(avaliacao, "criado_em")
-        ),
+        "criado_em": _serializar_instante_utc(_obter_campo(avaliacao, "criado_em")),
     }
 
 
@@ -100,8 +96,4 @@ def serializar_avaliacoes(
     avaliacoes: list[Avaliacao | Mapping[str, Any]],
 ) -> dict[str, list[dict[str, Any]]]:
     """Serializa a coleção canônica de avaliações."""
-    return {
-        "avaliacoes": [
-            serializar_avaliacao(avaliacao) for avaliacao in avaliacoes
-        ]
-    }
+    return {"avaliacoes": [serializar_avaliacao(avaliacao) for avaliacao in avaliacoes]}

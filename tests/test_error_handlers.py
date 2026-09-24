@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 from app import app  # noqa: E402
 from schemas.error import ErrorSchema  # noqa: E402
@@ -180,9 +181,7 @@ class ErrorHandlerTestCase(unittest.TestCase):
             "detalhe técnico sigiloso",
             response.get_data(as_text=True),
         )
-        self.assertTrue(
-            any(error["requisicao_id"] in record for record in logs.output)
-        )
+        self.assertTrue(any(error["requisicao_id"] in record for record in logs.output))
 
     def test_http_errors_follow_envelope(self):
         response = self.client.get("/rota-que-nao-existe")

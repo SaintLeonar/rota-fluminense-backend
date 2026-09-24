@@ -8,6 +8,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 from models.avaliacao import Avaliacao  # noqa: E402
 from models.base import Base  # noqa: E402
@@ -86,8 +87,7 @@ class SeedTransactionTestCase(unittest.TestCase):
                 "avaliacoes": len(evaluations),
             },
             "locais": tuple(
-                tuple(self.normalize_value(value) for value in row)
-                for row in locations
+                tuple(self.normalize_value(value) for value in row) for row in locations
             ),
             "avaliacoes": tuple(
                 tuple(self.normalize_value(value) for value in row)
@@ -102,9 +102,7 @@ class SeedTransactionTestCase(unittest.TestCase):
             second_result = seed.run_seed()
             second_snapshot = self.snapshot()
 
-        self.assertEqual(
-            first_snapshot["contagens"], {"locais": 6, "avaliacoes": 6}
-        )
+        self.assertEqual(first_snapshot["contagens"], {"locais": 6, "avaliacoes": 6})
         self.assertEqual(first_snapshot, second_snapshot)
         self.assertEqual(
             seed.build_seed_report(first_result)["totais"],

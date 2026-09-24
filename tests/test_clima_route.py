@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 from sqlalchemy.exc import OperationalError
 
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
 
 from app import app  # noqa: E402
 from schemas import clima_schema, openapi_examples  # noqa: E402
@@ -96,9 +97,7 @@ class ClimaRouteTestCase(unittest.TestCase):
 
     def test_route_is_registered_with_slug_path(self):
         get_rules = {
-            rule.rule
-            for rule in app.url_map.iter_rules()
-            if "GET" in rule.methods
+            rule.rule for rule in app.url_map.iter_rules() if "GET" in rule.methods
         }
 
         self.assertIn("/locais/<slug>/clima", get_rules)
@@ -120,9 +119,7 @@ class ClimaRouteTestCase(unittest.TestCase):
                 "consulta meteorológica."
             ),
         )
-        self.assertTrue(
-            any(error["requisicao_id"] in record for record in logs.output)
-        )
+        self.assertTrue(any(error["requisicao_id"] in record for record in logs.output))
 
     def test_every_provider_failure_returns_same_safe_climate_envelope(self):
         for reason in (
@@ -141,10 +138,7 @@ class ClimaRouteTestCase(unittest.TestCase):
                     response,
                     503,
                     "clima_indisponivel",
-                    (
-                        "O serviço de clima está temporariamente "
-                        "indisponível."
-                    ),
+                    ("O serviço de clima está temporariamente " "indisponível."),
                 )
                 self.assertNotIn(reason, response.get_data(as_text=True))
 
@@ -187,13 +181,11 @@ class ClimaRouteTestCase(unittest.TestCase):
             "detalhe técnico sigiloso",
             response.get_data(as_text=True),
         )
-        self.assertTrue(
-            any(error["requisicao_id"] in record for record in logs.output)
-        )
+        self.assertTrue(any(error["requisicao_id"] in record for record in logs.output))
 
     def test_climate_failure_does_not_break_local_detail_route(self):
-        self.service.consultar_clima.side_effect = (
-            exceptions.ClimaIndisponivelError("timeout")
+        self.service.consultar_clima.side_effect = exceptions.ClimaIndisponivelError(
+            "timeout"
         )
 
         with (
