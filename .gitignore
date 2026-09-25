@@ -9,3 +9,6 @@ database.db
 
 # Override local para acesso temporário do host ao MySQL
 compose.mysql-host-access.yml
+
+# Documentation backups
+docs/bkp/

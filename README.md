@@ -130,13 +130,4 @@ controles de editar e excluir não comprovam autoria nem restringem acesso;
 servem exclusivamente à demonstração controlada do contrato HTTP. Execute o
 conjunto somente em ambiente local ou controlado de demonstração.
 
-`CORS_ALLOWED_ORIGINS` deve conter a origem pública do front-end, por padrão
-`http://localhost:5173`. Uma origem negada não recebe autorização CORS. Essa
-política protege apenas a fronteira do navegador e não substitui autenticação,
-autorização, TLS ou limitação de requisições.
-
-As portas públicas do Compose são vinculadas ao loopback e o MySQL não publica
-porta por padrão. A gestão externa de segredos e o endurecimento para produção
-permanecem fora do escopo deste MVP.
-
 Dados meteorológicos por [Open-Meteo.com](https://open-meteo.com/).
