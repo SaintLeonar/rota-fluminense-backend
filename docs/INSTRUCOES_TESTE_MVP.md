@@ -6,17 +6,19 @@ Iniciar os três serviços do Rota Fluminense com Docker Compose, testar a aplic
 
 Não são usados `curl`, `Invoke-WebRequest`, scripts de teste ou acesso direto ao banco neste roteiro.
 
+O fluxo canônico parte da raiz de `rota-fluminense-front-end-avancado`, onde o `docker-compose.yml` atende à estrutura de entrega. O Compose equivalente mantido no back-end continua disponível para compatibilidade operacional.
+
 ## Pré-requisitos
 
 - Docker Desktop ou Docker Engine com o plugin Compose em execução.
 - Repositórios `rota-fluminense-backend` e `rota-fluminense-front-end-avancado` em diretórios irmãos.
-- Terminal aberto na raiz de `rota-fluminense-backend`.
-- Arquivo `.env` local configurado. Ele não deve ser exibido nem versionado.
+- Terminal aberto na raiz de `rota-fluminense-front-end-avancado`.
+- Arquivo `../rota-fluminense-backend/.env` configurado. Ele não deve ser exibido nem versionado.
 
-Se o `.env` ainda não existir, crie-o a partir do exemplo e revise os valores localmente:
+Se o `.env` do back-end ainda não existir, crie-o a partir do exemplo e revise os valores localmente:
 
 ```powershell
-if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+if (-not (Test-Path ../rota-fluminense-backend/.env)) { Copy-Item ../rota-fluminense-backend/.env.example ../rota-fluminense-backend/.env }
 ```
 
 ## 1. Iniciar a aplicação
@@ -29,14 +31,14 @@ arquivo `compose.custom-ca.example.yml`; não desative a verificação TLS.
 Valide a configuração antes de criar os contêineres:
 
 ```powershell
-docker compose --env-file .env config --quiet
+docker compose --env-file ../rota-fluminense-backend/.env config --quiet
 ```
 
 O comando termina sem saída quando a configuração é válida. Em seguida, construa as imagens e aguarde os serviços ficarem saudáveis:
 
 ```powershell
-docker compose --env-file .env up --build --detach --wait
-docker compose --env-file .env ps
+docker compose --env-file ../rota-fluminense-backend/.env up --build --detach --wait
+docker compose --env-file ../rota-fluminense-backend/.env ps
 ```
 
 Confirme em `ps` ou no Docker Desktop que os serviços `frontend`, `backend` e `mysql` estão em execução. O agrupamento Compose deve aparecer como `rota-fluminense`.
@@ -46,28 +48,6 @@ Abra somente estes endereços no navegador:
 - interface: `http://localhost:5173`;
 - Swagger: `http://localhost:5000/openapi/`.
 
-Para acompanhar continuamente os logs do backend durante os testes, abra outro
-terminal na raiz de `rota-fluminense-backend` e execute o visualizador colorido:
-
-```powershell
-.\scripts\acompanhar_logs_backend.ps1
-```
-
-O visualizador mantém o prefixo do contêiner em ciano e destaca respostas `2xx`
-em verde, `3xx` em amarelo escuro, `4xx` e avisos em amarelo, erros `5xx`,
-`ERROR`, `CRITICAL` e timeouts em vermelho. As requisições periódicas do
-healthcheck aparecem em cinza para reduzir o ruído visual. O comando exibe as
-100 linhas mais recentes e continua mostrando cada nova linha em tempo real.
-
-Pressione `Ctrl+C` para interromper o acompanhamento dos logs sem encerrar o
-contêiner.
-
-Se o terminal não oferecer suporte adequado a cores, use diretamente a saída
-original do Docker Compose:
-
-```powershell
-docker compose --env-file .env logs --follow backend
-```
 
 ### 1.1 Inicialização opcional com CA adicional
 
@@ -76,7 +56,7 @@ conexão HTTPS do contêiner com o Open-Meteo. Não é necessário criar uma
 exceção no antivírus nem desativar a validação TLS.
 
 Exporte a CA raiz utilizada pela inspeção HTTPS no formato PEM/Base-64 com a
-extensão `.crt` e mantenha o arquivo fora do Git. Depois, acrescente ao `.env`
+extensão `.crt` e mantenha o arquivo fora do Git. Depois, acrescente ao `../rota-fluminense-backend/.env`
 o caminho absoluto do certificado no computador hospedeiro:
 
 ```env
@@ -86,23 +66,23 @@ OPEN_METEO_CA_HOST_PATH=C:/caminho/para/proxy-root-ca.crt
 Valide a configuração combinada:
 
 ```powershell
-docker compose --env-file .env `
+docker compose --env-file ../rota-fluminense-backend/.env `
   -f docker-compose.yml `
-  -f compose.custom-ca.example.yml `
+  -f ../rota-fluminense-backend/compose.custom-ca.example.yml `
   config --quiet
 ```
 
 Em seguida, construa e inicie a aplicação com o arquivo adicional:
 
 ```powershell
-docker compose --env-file .env `
+docker compose --env-file ../rota-fluminense-backend/.env `
   -f docker-compose.yml `
-  -f compose.custom-ca.example.yml `
+  -f ../rota-fluminense-backend/compose.custom-ca.example.yml `
   up --build --detach --wait
 
-docker compose --env-file .env `
+docker compose --env-file ../rota-fluminense-backend/.env `
   -f docker-compose.yml `
-  -f compose.custom-ca.example.yml `
+  -f ../rota-fluminense-backend/compose.custom-ca.example.yml `
   ps
 ```
 
@@ -199,10 +179,10 @@ Se o POST tiver sido executado, não encerre o roteiro antes de remover esse reg
 
 ## 4. Encerrar o Docker
 
-Na raiz de `rota-fluminense-backend`, encerre os contêineres e as redes do projeto:
+Na raiz de `rota-fluminense-front-end-avancado`, encerre os contêineres e as redes do projeto:
 
 ```powershell
-docker compose --env-file .env down
+docker compose --env-file ../rota-fluminense-backend/.env down
 ```
 
 Esse comando preserva o volume `rota-fluminense_mysql_data` e, portanto, os dados persistidos no MySQL.
@@ -210,7 +190,7 @@ Esse comando preserva o volume `rota-fluminense_mysql_data` e, portanto, os dado
 Confirme o encerramento:
 
 ```powershell
-docker compose --env-file .env ps
+docker compose --env-file ../rota-fluminense-backend/.env ps
 ```
 
 O comando não deve listar contêineres ativos do projeto.

@@ -34,8 +34,10 @@ Os documentos complementares estão disponíveis no diretório `docs/`:
   pelo Compose no fluxo principal.
 
 Mantenha este repositório e `rota-fluminense-front-end-avancado` como
-diretórios irmãos. O `docker-compose.yml` fica neste back-end e usa o diretório
-do front-end como contexto de build do serviço `frontend`.
+diretórios irmãos. O Compose de entrega fica em
+`../rota-fluminense-front-end-avancado/docker-compose.yml` e usa este back-end
+como contexto de build. Este repositório conserva um Compose equivalente para
+compatibilidade operacional.
 
 Por padrão, a API é publicada em `http://localhost:5000` e a interface em
 `http://localhost:5173`.
@@ -50,24 +52,24 @@ Por padrão, a API é publicada em `http://localhost:5000` e a interface em
 └── rota-fluminense-front-end-avancado/
 ```
 
-2. Entre no diretório do back-end:
+2. Entre no diretório do front-end, onde está o Compose de entrega:
 
 ```powershell
-cd rota-fluminense-backend
+cd rota-fluminense-front-end-avancado
 ```
 
 3. Crie o arquivo de configuração local:
 
 ```powershell
-Copy-Item .env.example .env
+Copy-Item ../rota-fluminense-backend/.env.example ../rota-fluminense-backend/.env
 ```
 
-Revise os valores do arquivo `.env`, principalmente usuário e senha do MySQL.
+Revise os valores de `../rota-fluminense-backend/.env`, principalmente usuário e senha do MySQL.
 
 4. Construa as imagens e inicie a aplicação:
 
 ```powershell
-docker compose --env-file .env up --build --detach --wait
+docker compose --env-file ../rota-fluminense-backend/.env up --build --detach --wait
 ```
 
 O Docker instala as dependências e inicia o front-end, o back-end e o MySQL.
@@ -83,7 +85,7 @@ automaticamente. Não é necessário rodar um comando separado.
 Para encerrar:
 
 ```powershell
-docker compose --env-file .env down
+docker compose --env-file ../rota-fluminense-backend/.env down
 ```
 
 ## Inicialização com inspeção HTTPS do antivírus
@@ -99,7 +101,7 @@ certificado.
    **X.509 codificado em Base-64**.
 4. Salve o certificado fora do repositório, por exemplo em
    `C:\certificados\antivirus-root-ca.crt`.
-5. Acrescente o caminho ao arquivo `.env`, usando barras `/`:
+5. Acrescente o caminho ao arquivo `../rota-fluminense-backend/.env`, usando barras `/`:
 
 ```dotenv
 OPEN_METEO_CA_HOST_PATH=C:/certificados/antivirus-root-ca.crt
@@ -108,7 +110,7 @@ OPEN_METEO_CA_HOST_PATH=C:/certificados/antivirus-root-ca.crt
 6. Inicie a aplicação com o arquivo de configuração adicional:
 
 ```powershell
-docker compose --env-file .env -f docker-compose.yml -f compose.custom-ca.example.yml up --build --detach --wait
+docker compose --env-file ../rota-fluminense-backend/.env -f docker-compose.yml -f ../rota-fluminense-backend/compose.custom-ca.example.yml up --build --detach --wait
 ```
 
 Esse modo monta o certificado somente no back-end e o adiciona às autoridades
@@ -118,7 +120,7 @@ Não versione o certificado e não desabilite a verificação HTTPS.
 Para encerrar essa execução:
 
 ```powershell
-docker compose --env-file .env -f docker-compose.yml -f compose.custom-ca.example.yml down
+docker compose --env-file ../rota-fluminense-backend/.env -f docker-compose.yml -f ../rota-fluminense-backend/compose.custom-ca.example.yml down
 ```
 
 ## Segurança e limitações do MVP
