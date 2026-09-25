@@ -1,4 +1,4 @@
-# Rota Fluminense
+# Rota Fluminense - Back-end
 
 Aplicação para consulta de locais turísticos do estado do Rio de Janeiro,
 avaliações de visitantes e previsão do tempo. O projeto utiliza uma interface
